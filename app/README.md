@@ -22,7 +22,7 @@ flutter run -d linux
 `flutter test` loads the engine from `../mauna-ranga/target/debug/libranga_ffi.so`. Build it first:
 
 ```sh
-cargo build -p ranga-ffi --manifest-path ../mauna-ranga/Cargo.toml
+cargo build -p ranga_ffi --manifest-path ../mauna-ranga/Cargo.toml
 flutter test
 ```
 

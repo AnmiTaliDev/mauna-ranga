@@ -1,5 +1,5 @@
 [package]
-name = "ranga-ffi"
+name = "ranga_ffi"
 description = "flutter_rust_bridge bindings for the Mauna Ranga engine"
 version.workspace = true
 edition.workspace = true

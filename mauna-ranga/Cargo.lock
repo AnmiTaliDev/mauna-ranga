@@ -1016,20 +1016,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "ranga-ffi"
+name = "ranga-layout"
+version = "0.1.0"
+dependencies = [
+ "ranga-core",
+]
+
+[[package]]
+name = "ranga_ffi"
 version = "0.1.0"
 dependencies = [
  "flutter_rust_bridge",
  "ranga-core",
  "ranga-export",
  "ranga-layout",
-]
-
-[[package]]
-name = "ranga-layout"
-version = "0.1.0"
-dependencies = [
- "ranga-core",
 ]
 
 [[package]]

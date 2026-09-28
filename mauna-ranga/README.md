@@ -8,7 +8,7 @@ Rust engine of Mauna Ranga, a Fountain screenplay editor. It parses Fountain, re
 
 - Rust 1.88 or newer (edition 2024)
 - `printpdf` 0.12 without default features, for PDF output
-- `flutter_rust_bridge` 2.13.0, only in `ranga-ffi`
+- `flutter_rust_bridge` 2.13.0, only in `ranga_ffi`
 
 ## Build
 
@@ -26,7 +26,7 @@ cargo fmt --check
 | `ranga-core` | Document model, Fountain parser, incremental reparse, word count, outline |
 | `ranga-layout` | Pagination, page geometry, runtime estimate |
 | `ranga-export` | PDF and FDX export |
-| `ranga-ffi` | API for the Flutter app, generated bindings in `app/lib/bridge/generated` |
+| `ranga_ffi` | API for the Flutter app, generated bindings in `app/lib/bridge/generated` |
 
 ## Parser
 

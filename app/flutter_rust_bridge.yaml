@@ -1,0 +1,3 @@
+rust_input: crate::api
+rust_root: ../mauna-ranga/crates/ranga-ffi/
+dart_output: lib/bridge/generated

@@ -1,0 +1,178 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
+import '../bridge/generated/api/document.dart';
+import '../bridge/generated/api/export.dart' as bridge;
+import 'fountain_elements.dart';
+import 'fountain_text_controller.dart';
+
+const Duration statsDelay = Duration(milliseconds: 300);
+const double minutesPerPage = 1.0;
+
+class EditorController extends ChangeNotifier {
+  EditorController() {
+    text.addListener(_onTextChanged);
+  }
+
+  final FountainTextController text = FountainTextController();
+
+  DocumentHandle? _handle;
+  String _lastText = '';
+  int _generation = 0;
+  Timer? _statsTimer;
+
+  String? path;
+  List<OutlineEntry> outline = <OutlineEntry>[];
+  int words = 0;
+  int? pages;
+  double? runtimeMinutes;
+
+  @override
+  void dispose() {
+    _statsTimer?.cancel();
+    text.dispose();
+    _handle?.dispose();
+    super.dispose();
+  }
+
+  Future<void> load(String source, {String? path}) async {
+    await _replaceHandle(source);
+    this.path = path;
+    text.value = TextEditingValue(
+      text: source,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+  }
+
+  Future<void> open(String path) async {
+    final String source = await File(path).readAsString();
+    await load(source, path: path);
+  }
+
+  Future<void> save(String path) async {
+    await File(path).writeAsString(text.text);
+    this.path = path;
+    notifyListeners();
+  }
+
+  Future<void> exportPdf(String path) async {
+    final Uint8List bytes = await bridge.exportPdf(
+      handle: _handle!,
+      fonts: bridge.FontFiles(
+        regular: await _font('CourierPrime-Regular.ttf'),
+        bold: await _font('CourierPrime-Bold.ttf'),
+        italic: await _font('CourierPrime-Italic.ttf'),
+        boldItalic: await _font('CourierPrime-BoldItalic.ttf'),
+      ),
+    );
+    await File(path).writeAsBytes(bytes);
+  }
+
+  Future<void> exportFdx(String path) async {
+    await File(path).writeAsString(await bridge.exportFdx(handle: _handle!));
+  }
+
+  int? currentOutlineIndex() {
+    final int caret = text.selection.baseOffset;
+    int? current;
+    for (int i = 0; i < outline.length; i++) {
+      if (outline[i].offset <= caret) {
+        current = i;
+      }
+    }
+    return current;
+  }
+
+  Future<Uint8List> _font(String file) async {
+    final ByteData data = await rootBundle.load('fonts/$file');
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+
+  Future<void> _replaceHandle(String source) async {
+    final DocumentHandle handle = await createDocument(source: source);
+    _handle?.dispose();
+    _handle = handle;
+    _generation++;
+    _lastText = source;
+    text.elements = <FountainElement>[];
+    final DocumentSnapshot snapshot = documentSnapshot(handle: handle);
+    applySnapshot(text.elements, snapshot);
+    _refresh(handle, snapshot);
+  }
+
+  void _onTextChanged() {
+    final DocumentHandle? handle = _handle;
+    final String current = text.text;
+    if (handle == null || current == _lastText) {
+      notifyListeners();
+      return;
+    }
+    final TextEdit edit = _diff(_lastText, current);
+    _lastText = current;
+    try {
+      final DocumentSnapshot snapshot = applyEdit(handle: handle, edit: edit);
+      applySnapshot(text.elements, snapshot);
+      _refresh(handle, snapshot);
+    } catch (error) {
+      unawaited(_replaceHandle(current));
+    }
+  }
+
+  void _refresh(DocumentHandle handle, DocumentSnapshot snapshot) {
+    words = snapshot.wordCount;
+    outline = documentOutline(handle: handle);
+    _statsTimer?.cancel();
+    _statsTimer = Timer(statsDelay, _updateStats);
+    notifyListeners();
+  }
+
+  Future<void> _updateStats() async {
+    final int generation = _generation;
+    final DocumentStats stats = await documentStats(
+      handle: _handle!,
+      settings: const PageSettings(minutesPerPage: minutesPerPage),
+    );
+    if (generation != _generation) {
+      return;
+    }
+    pages = stats.pages;
+    runtimeMinutes = stats.runtimeMinutes;
+    notifyListeners();
+  }
+}
+
+TextEdit _diff(String before, String after) {
+  final int limit = before.length < after.length ? before.length : after.length;
+  int start = 0;
+  while (start < limit && before.codeUnitAt(start) == after.codeUnitAt(start)) {
+    start++;
+  }
+  int oldEnd = before.length;
+  int newEnd = after.length;
+  while (oldEnd > start &&
+      newEnd > start &&
+      before.codeUnitAt(oldEnd - 1) == after.codeUnitAt(newEnd - 1)) {
+    oldEnd--;
+    newEnd--;
+  }
+  if (start > 0 && _isHighSurrogate(before.codeUnitAt(start - 1))) {
+    start--;
+  }
+  if (oldEnd < before.length && _isLowSurrogate(before.codeUnitAt(oldEnd))) {
+    oldEnd++;
+    newEnd++;
+  }
+  return TextEdit(
+    start: start,
+    end: oldEnd,
+    replacement: after.substring(start, newEnd),
+  );
+}
+
+bool _isHighSurrogate(int unit) => unit >= 0xD800 && unit <= 0xDBFF;
+
+bool _isLowSurrogate(int unit) => unit >= 0xDC00 && unit <= 0xDFFF;

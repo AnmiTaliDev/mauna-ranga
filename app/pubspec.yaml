@@ -1,0 +1,40 @@
+name: mauna_ranga
+description: Fountain screenplay editor built on the Mauna Ranga engine and the mauna package.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.0
+  flutter: ">=3.32.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  mauna: ^0.1.0
+  flutter_rust_bridge: 2.13.0
+  ranga_ffi:
+    path: rust_builder
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: false
+  fonts:
+    - family: Courier Prime
+      fonts:
+        - asset: fonts/CourierPrime-Regular.ttf
+        - asset: fonts/CourierPrime-Bold.ttf
+          weight: 700
+        - asset: fonts/CourierPrime-Italic.ttf
+          style: italic
+        - asset: fonts/CourierPrime-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: Inter
+      fonts:
+        - asset: fonts/Inter-Regular.ttf
+        - asset: fonts/Inter-Medium.ttf
+          weight: 500

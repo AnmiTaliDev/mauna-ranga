@@ -7,11 +7,11 @@ import 'package:flutter/widgets.dart';
 
 import '../bridge/generated/api/document.dart';
 import '../bridge/generated/api/export.dart' as bridge;
+import '../settings/app_settings.dart';
 import 'fountain_elements.dart';
 import 'fountain_text_controller.dart';
 
 const Duration statsDelay = Duration(milliseconds: 300);
-const double minutesPerPage = 1.0;
 
 class EditorController extends ChangeNotifier {
   EditorController() {
@@ -30,6 +30,15 @@ class EditorController extends ChangeNotifier {
   int words = 0;
   int? pages;
   double? runtimeMinutes;
+  double _minutesPerPage = const AppSettings().minutesPerPage;
+
+  set minutesPerPage(double value) {
+    if (value == _minutesPerPage) {
+      return;
+    }
+    _minutesPerPage = value;
+    _scheduleStats();
+  }
 
   @override
   void dispose() {
@@ -59,14 +68,15 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> exportPdf(String path) async {
+  Future<void> exportPdf(String path, DocumentFont font) async {
+    final String prefix = font.filePrefix;
     final Uint8List bytes = await bridge.exportPdf(
       handle: _handle!,
       fonts: bridge.FontFiles(
-        regular: await _font('CourierPrime-Regular.ttf'),
-        bold: await _font('CourierPrime-Bold.ttf'),
-        italic: await _font('CourierPrime-Italic.ttf'),
-        boldItalic: await _font('CourierPrime-BoldItalic.ttf'),
+        regular: await _font('$prefix-Regular.ttf'),
+        bold: await _font('$prefix-Bold.ttf'),
+        italic: await _font('$prefix-Italic.ttf'),
+        boldItalic: await _font('$prefix-BoldItalic.ttf'),
       ),
     );
     await File(path).writeAsBytes(bytes);
@@ -125,16 +135,20 @@ class EditorController extends ChangeNotifier {
   void _refresh(DocumentHandle handle, DocumentSnapshot snapshot) {
     words = snapshot.wordCount;
     outline = documentOutline(handle: handle);
+    _scheduleStats();
+    notifyListeners();
+  }
+
+  void _scheduleStats() {
     _statsTimer?.cancel();
     _statsTimer = Timer(statsDelay, _updateStats);
-    notifyListeners();
   }
 
   Future<void> _updateStats() async {
     final int generation = _generation;
     final DocumentStats stats = await documentStats(
       handle: _handle!,
-      settings: const PageSettings(minutesPerPage: minutesPerPage),
+      settings: PageSettings(minutesPerPage: _minutesPerPage),
     );
     if (generation != _generation) {
       return;

@@ -2,7 +2,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mauna/mauna.dart';
+import 'dart:io';
+
 import 'package:mauna_ranga/main.dart';
+import 'package:mauna_ranga/settings/app_settings.dart';
+import 'package:mauna_ranga/settings/settings_store.dart';
 
 import 'rust_library.dart';
 
@@ -42,7 +46,14 @@ void main() {
     'typing updates outline, palette runs a command, focus mode hides chrome',
     (WidgetTester tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
-      await tester.pumpWidget(const RangaApp());
+      final Directory dir = Directory.systemTemp.createTempSync('ranga_test');
+      addTearDown(() => dir.deleteSync(recursive: true));
+      await tester.pumpWidget(
+        RangaApp(
+          store: SettingsStore(File('${dir.path}/settings.json')),
+          settings: const AppSettings(),
+        ),
+      );
       await settle(tester);
 
       await tester.enterText(

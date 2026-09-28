@@ -1,16 +1,37 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'bridge/generated/frb_generated.dart';
 import 'editor/editor_screen.dart';
-import 'settings/theme_preset.dart';
+import 'settings/app_settings.dart';
+import 'settings/settings_store.dart';
 
 Future<void> main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
   await RustLib.init();
-  runApp(RangaApp(initialPath: args.isEmpty ? null : args.first));
+  final SettingsStore store = SettingsStore.forUser();
+  final AppSettings settings = await store.load();
+  runApp(
+    RangaApp(
+      store: store,
+      settings: settings,
+      initialPath: args.isEmpty ? null : args.first,
+    ),
+  );
 }
 
 class RangaApp extends StatefulWidget {
-  const RangaApp({super.key, this.initialPath});
+  const RangaApp({
+    super.key,
+    required this.store,
+    required this.settings,
+    this.initialPath,
+  });
+
+  final SettingsStore store;
+
+  final AppSettings settings;
 
   final String? initialPath;
 
@@ -19,10 +40,11 @@ class RangaApp extends StatefulWidget {
 }
 
 class _RangaAppState extends State<RangaApp> {
-  ThemePreset _preset = ThemePreset.paper;
+  late AppSettings _settings = widget.settings;
 
-  void _setPreset(ThemePreset preset) {
-    setState(() => _preset = preset);
+  void _setSettings(AppSettings settings) {
+    setState(() => _settings = settings);
+    unawaited(widget.store.save(settings));
   }
 
   @override
@@ -30,10 +52,10 @@ class _RangaAppState extends State<RangaApp> {
     return MaterialApp(
       title: 'Mauna Ranga',
       debugShowCheckedModeBanner: false,
-      theme: _preset.build().toMaterialTheme(),
+      theme: _settings.theme().toMaterialTheme(),
       home: EditorScreen(
-        preset: _preset,
-        onPresetChanged: _setPreset,
+        settings: _settings,
+        onSettingsChanged: _setSettings,
         initialPath: widget.initialPath,
       ),
     );

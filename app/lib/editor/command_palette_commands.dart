@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
-import '../settings/theme_preset.dart';
+import '../settings/app_settings.dart';
 
 List<MaunaCommand> editorCommands({
   required List<OutlineEntry> outline,
@@ -16,7 +16,8 @@ List<MaunaCommand> editorCommands({
   required VoidCallback toggleFocusMode,
   required bool sidebarOpen,
   required VoidCallback toggleSidebar,
-  required ValueChanged<ThemePreset> setTheme,
+  required AppSettings settings,
+  required ValueChanged<AppSettings> changeSettings,
   required VoidCallback openSettings,
 }) {
   return <MaunaCommand>[
@@ -36,7 +37,12 @@ List<MaunaCommand> editorCommands({
     for (final ThemePreset preset in ThemePreset.values)
       MaunaCommand(
         label: 'Use ${preset.label} theme',
-        onSelected: () => setTheme(preset),
+        onSelected: () => changeSettings(settings.copyWith(preset: preset)),
+      ),
+    for (final DocumentFont font in DocumentFont.values)
+      MaunaCommand(
+        label: 'Use ${font.family} font',
+        onSelected: () => changeSettings(settings.copyWith(font: font)),
       ),
     MaunaCommand(label: 'Open settings', onSelected: openSettings),
     for (int i = 0; i < outline.length; i++)

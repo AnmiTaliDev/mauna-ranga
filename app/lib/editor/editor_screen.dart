@@ -1,29 +1,45 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
 import '../focus/focus_mode_controller.dart';
+import '../settings/app_settings.dart';
 import '../settings/settings_dialog.dart';
-import '../settings/theme_preset.dart';
 import 'command_palette_commands.dart';
 import 'dialogs.dart';
 import 'editor_controller.dart';
+import 'toolbar_menu.dart';
+
+const XTypeGroup fountainFiles = XTypeGroup(
+  label: 'Fountain',
+  extensions: <String>['fountain', 'spmd', 'txt'],
+);
+const XTypeGroup pdfFiles = XTypeGroup(
+  label: 'PDF',
+  extensions: <String>['pdf'],
+);
+const XTypeGroup fdxFiles = XTypeGroup(
+  label: 'Final Draft',
+  extensions: <String>['fdx'],
+);
+const String untitledName = 'Untitled.fountain';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({
     super.key,
-    required this.preset,
-    required this.onPresetChanged,
+    required this.settings,
+    required this.onSettingsChanged,
     this.initialPath,
   });
 
-  final ThemePreset preset;
+  final AppSettings settings;
 
-  final ValueChanged<ThemePreset> onPresetChanged;
+  final ValueChanged<AppSettings> onSettingsChanged;
 
   final String? initialPath;
 
@@ -40,11 +56,18 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
+    _editor.minutesPerPage = widget.settings.minutesPerPage;
     _editor.addListener(_onChanged);
     _editor.text.addListener(_onTextChanged);
     _focus.addListener(_onChanged);
     _documentFocus.addListener(_onChanged);
     unawaited(_start());
+  }
+
+  @override
+  void didUpdateWidget(EditorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _editor.minutesPerPage = widget.settings.minutesPerPage;
   }
 
   @override
@@ -86,10 +109,7 @@ class _EditorScreenState extends State<EditorScreen> {
     try {
       await action();
     } on FileSystemException catch (error) {
-      await _showError(
-        failure,
-        '${error.message}: ${error.path}. Check the path.',
-      );
+      await _showError(failure, '${error.message}: ${error.path}.');
     } on String catch (error) {
       await _showError(failure, error);
     }
@@ -103,40 +123,38 @@ class _EditorScreenState extends State<EditorScreen> {
     _documentFocus.requestFocus();
   }
 
-  Future<String?> _askPath(
-    String title,
-    String action,
-    String initialPath,
-  ) async {
-    final String? path = await showPathDialog(
-      context: context,
-      title: title,
-      action: action,
-      initialPath: initialPath,
-    );
-    _documentFocus.requestFocus();
-    return path;
+  String? _directory() {
+    final String? path = _editor.path;
+    return path == null ? null : File(path).parent.path;
   }
 
-  String _siblingPath(String extension) {
+  String _suggestedName(String extension) {
     final String? path = _editor.path;
-    if (path == null) {
-      return '';
-    }
-    final int dot = path.lastIndexOf('.');
-    final int slash = path.lastIndexOf(Platform.pathSeparator);
-    final String stem = dot > slash ? path.substring(0, dot) : path;
-    return '$stem.$extension';
+    final String name = path == null
+        ? untitledName
+        : path.split(Platform.pathSeparator).last;
+    final int dot = name.lastIndexOf('.');
+    return '${dot > 0 ? name.substring(0, dot) : name}.$extension';
+  }
+
+  Future<String?> _saveLocation(XTypeGroup group, String extension) async {
+    final FileSaveLocation? location = await getSaveLocation(
+      acceptedTypeGroups: <XTypeGroup>[group],
+      initialDirectory: _directory(),
+      suggestedName: _suggestedName(extension),
+    );
+    _documentFocus.requestFocus();
+    return location?.path;
   }
 
   Future<void> _open() async {
-    final String? path = await _askPath(
-      'Open file',
-      'Open',
-      _editor.path ?? '',
+    final XFile? file = await openFile(
+      acceptedTypeGroups: const <XTypeGroup>[fountainFiles],
+      initialDirectory: _directory(),
     );
-    if (path != null) {
-      await _run('Cannot open the file', () => _editor.open(path));
+    _documentFocus.requestFocus();
+    if (file != null) {
+      await _run('Cannot open the file', () => _editor.open(file.path));
     }
   }
 
@@ -150,29 +168,24 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _saveAs() async {
-    final String? path = await _askPath('Save as', 'Save', _editor.path ?? '');
+    final String? path = await _saveLocation(fountainFiles, 'fountain');
     if (path != null) {
       await _run('Cannot save the file', () => _editor.save(path));
     }
   }
 
   Future<void> _exportPdf() async {
-    final String? path = await _askPath(
-      'Export to PDF',
-      'Export',
-      _siblingPath('pdf'),
-    );
+    final String? path = await _saveLocation(pdfFiles, 'pdf');
     if (path != null) {
-      await _run('Cannot export to PDF', () => _editor.exportPdf(path));
+      await _run(
+        'Cannot export to PDF',
+        () => _editor.exportPdf(path, widget.settings.font),
+      );
     }
   }
 
   Future<void> _exportFdx() async {
-    final String? path = await _askPath(
-      'Export to FDX',
-      'Export',
-      _siblingPath('fdx'),
-    );
+    final String? path = await _saveLocation(fdxFiles, 'fdx');
     if (path != null) {
       await _run('Cannot export to FDX', () => _editor.exportFdx(path));
     }
@@ -206,7 +219,8 @@ class _EditorScreenState extends State<EditorScreen> {
           toggleFocusMode: _toggleFocusMode,
           sidebarOpen: _focus.sidebarOpen,
           toggleSidebar: _focus.toggleSidebar,
-          setTheme: widget.onPresetChanged,
+          settings: widget.settings,
+          changeSettings: widget.onSettingsChanged,
           openSettings: _openSettings,
         ),
       ),
@@ -218,8 +232,8 @@ class _EditorScreenState extends State<EditorScreen> {
     await showMaunaDialog<void>(
       context: context,
       builder: (BuildContext context) => SettingsDialog(
-        preset: widget.preset,
-        onPresetChanged: widget.onPresetChanged,
+        settings: widget.settings,
+        onChanged: widget.onSettingsChanged,
       ),
     );
     _documentFocus.requestFocus();
@@ -238,7 +252,10 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
-    final bool dimmed = _focus.writing && _documentFocus.hasFocus;
+    final bool dimmed =
+        widget.settings.dimWhileTyping &&
+        _focus.writing &&
+        _documentFocus.hasFocus;
     final List<OutlineEntry> outline = _editor.outline;
     final int? current = _editor.currentOutlineIndex();
     final String? path = _editor.path;
@@ -259,6 +276,11 @@ class _EditorScreenState extends State<EditorScreen> {
         const SingleActivator(LogicalKeyboardKey.escape): _focus.exitFocusMode,
         const SingleActivator(LogicalKeyboardKey.keyO, control: true): _open,
         const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
+        const SingleActivator(
+          LogicalKeyboardKey.keyS,
+          control: true,
+          shift: true,
+        ): _saveAs,
       },
       child: MouseRegion(
         onHover: _onPointerMoved,
@@ -272,41 +294,46 @@ class _EditorScreenState extends State<EditorScreen> {
                     hidden: _focus.focusMode,
                     dimmed: dimmed,
                     leading: <Widget>[
-                      MaunaToolbarButton(
-                        icon: MaunaGlyphs.menu(),
-                        label: _focus.sidebarOpen
-                            ? 'Hide sidebar'
-                            : 'Show sidebar',
-                        onPressed: _focus.toggleSidebar,
+                      ToolbarMenu(
+                        label: 'File',
+                        entries: <MenuEntry>[
+                          MenuEntry('Open', _open, shortcut: 'Ctrl+O'),
+                          MenuEntry('Save', _save, shortcut: 'Ctrl+S'),
+                          MenuEntry(
+                            'Save as',
+                            _saveAs,
+                            shortcut: 'Ctrl+Shift+S',
+                          ),
+                          const MenuEntry.separator(),
+                          MenuEntry('Export to PDF', _exportPdf),
+                          MenuEntry('Export to FDX', _exportFdx),
+                        ],
                       ),
-                      MaunaToolbarButton(
-                        icon: MaunaGlyphs.file(),
-                        label: 'Open file',
-                        onPressed: _open,
-                      ),
-                      MaunaToolbarButton(
-                        icon: MaunaGlyphs.save(),
-                        label: 'Save',
-                        onPressed: _save,
+                      ToolbarMenu(
+                        label: 'View',
+                        entries: <MenuEntry>[
+                          MenuEntry(
+                            'Commands',
+                            _openPalette,
+                            shortcut: 'Ctrl+K',
+                          ),
+                          MenuEntry(
+                            _focus.sidebarOpen
+                                ? 'Hide sidebar'
+                                : 'Show sidebar',
+                            _focus.toggleSidebar,
+                            shortcut: 'Ctrl+B',
+                          ),
+                          MenuEntry(
+                            'Enter focus mode',
+                            _toggleFocusMode,
+                            shortcut: 'Ctrl+Shift+F',
+                          ),
+                        ],
                       ),
                     ],
                     trailing: <Widget>[
-                      MaunaToolbarButton(
-                        icon: MaunaGlyphs.command(),
-                        label: 'Commands',
-                        onPressed: _openPalette,
-                      ),
-                      MaunaToolbarButton(
-                        icon: MaunaGlyphs.download(),
-                        label: 'Export to PDF',
-                        onPressed: _exportPdf,
-                      ),
-                      MaunaToolbarButton(
-                        icon: MaunaGlyphs.focus(),
-                        label: 'Enter focus mode',
-                        onPressed: _toggleFocusMode,
-                      ),
-                      MaunaToolbarButton(
+                      MaunaToolbarChip(
                         icon: MaunaGlyphs.settings(),
                         label: 'Settings',
                         onPressed: _openSettings,

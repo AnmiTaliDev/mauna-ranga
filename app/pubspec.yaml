@@ -4,8 +4,8 @@ publish_to: none
 version: 0.1.0
 
 environment:
-  sdk: ^3.8.0
-  flutter: ">=3.32.0"
+  sdk: ^3.9.0
+  flutter: ">=3.35.0"
 
 dependencies:
   flutter:
@@ -14,11 +14,14 @@ dependencies:
   flutter_rust_bridge: 2.13.0
   ranga_ffi:
     path: rust_builder
+  file_selector: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  file_selector_platform_interface: ^2.7.0
+  plugin_platform_interface: ^2.1.8
 
 flutter:
   uses-material-design: false
@@ -31,6 +34,16 @@ flutter:
         - asset: fonts/CourierPrime-Italic.ttf
           style: italic
         - asset: fonts/CourierPrime-BoldItalic.ttf
+          weight: 700
+          style: italic
+    - family: JetBrains Mono
+      fonts:
+        - asset: fonts/JetBrainsMono-Regular.ttf
+        - asset: fonts/JetBrainsMono-Bold.ttf
+          weight: 700
+        - asset: fonts/JetBrainsMono-Italic.ttf
+          style: italic
+        - asset: fonts/JetBrainsMono-BoldItalic.ttf
           weight: 700
           style: italic
     - family: Inter

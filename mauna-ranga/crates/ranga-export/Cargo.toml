@@ -1,0 +1,13 @@
+[package]
+name = "ranga-export"
+description = "PDF and Final Draft (FDX) export for Fountain documents"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+ranga-core.workspace = true
+ranga-layout.workspace = true
+printpdf.workspace = true

@@ -1,0 +1,10 @@
+[package]
+name = "ranga-core"
+description = "Fountain document model, parser and incremental reparser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]

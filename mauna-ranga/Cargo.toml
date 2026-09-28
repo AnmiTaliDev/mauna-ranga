@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ranga-core",
+    "crates/ranga-layout",
+    "crates/ranga-export",
+    "crates/ranga-ffi",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+authors = ["AnmiTaliDev <anmitalidev@nuros.org>"]
+repository = "https://github.com/AnmiTaliDev/mauna-ranga"
+
+[workspace.dependencies]
+ranga-core = { path = "crates/ranga-core" }
+ranga-layout = { path = "crates/ranga-layout" }
+ranga-export = { path = "crates/ranga-export" }
+printpdf = { version = "0.12.8", default-features = false }
+flutter_rust_bridge = "=2.13.0"

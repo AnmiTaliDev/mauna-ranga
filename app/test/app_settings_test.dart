@@ -31,4 +31,29 @@ void main() {
     final AppSettings loaded = await SettingsStore(file).load();
     expect(loaded.toJson(), const AppSettings().toJson());
   });
+
+  test('recent files keep the newest first without duplicates', () {
+    AppSettings settings = const AppSettings();
+    settings = settings.withRecentFile('/a').withRecentFile('/b');
+    settings = settings.withRecentFile('/a');
+    expect(settings.recentFiles, <String>['/a', '/b']);
+    expect(settings.withoutRecentFile('/a').recentFiles, <String>['/b']);
+  });
+
+  test('recent files are limited and survive a save and load', () async {
+    AppSettings settings = const AppSettings();
+    for (int i = 0; i < recentFilesLimit + 3; i++) {
+      settings = settings.withRecentFile('/file$i');
+    }
+    expect(settings.recentFiles.length, recentFilesLimit);
+    expect(settings.recentFiles.first, '/file${recentFilesLimit + 2}');
+    final AppSettings loaded = AppSettings.fromJson(settings.toJson());
+    expect(loaded.recentFiles, settings.recentFiles);
+    expect(
+      AppSettings.fromJson(<String, Object?>{
+        'recentFiles': <Object?>['/a', 3, null],
+      }).recentFiles,
+      <String>['/a'],
+    );
+  });
 }

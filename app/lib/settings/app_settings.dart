@@ -40,6 +40,8 @@ enum DocumentFont {
   final String coverage;
 }
 
+const int recentFilesLimit = 10;
+
 class AppSettings {
   const AppSettings({
     this.preset = ThemePreset.paper,
@@ -47,12 +49,14 @@ class AppSettings {
     this.font = DocumentFont.courierPrime,
     this.dimWhileTyping = true,
     this.minutesPerPage = 1.0,
+    this.recentFiles = const <String>[],
   });
 
   factory AppSettings.fromJson(Map<String, Object?> json) {
     const AppSettings defaults = AppSettings();
     final Object? dim = json['dimWhileTyping'];
     final Object? minutes = json['minutesPerPage'];
+    final Object? recent = json['recentFiles'];
     return AppSettings(
       preset: _byName(ThemePreset.values, json['theme'], defaults.preset),
       accent: _byName(AccentChoice.values, json['accent'], defaults.accent),
@@ -61,6 +65,9 @@ class AppSettings {
       minutesPerPage: minutes is num && minutes > 0
           ? minutes.toDouble()
           : defaults.minutesPerPage,
+      recentFiles: recent is List<Object?>
+          ? recent.whereType<String>().take(recentFilesLimit).toList()
+          : defaults.recentFiles,
     );
   }
 
@@ -74,12 +81,15 @@ class AppSettings {
 
   final double minutesPerPage;
 
+  final List<String> recentFiles;
+
   AppSettings copyWith({
     ThemePreset? preset,
     AccentChoice? accent,
     DocumentFont? font,
     bool? dimWhileTyping,
     double? minutesPerPage,
+    List<String>? recentFiles,
   }) {
     return AppSettings(
       preset: preset ?? this.preset,
@@ -87,6 +97,22 @@ class AppSettings {
       font: font ?? this.font,
       dimWhileTyping: dimWhileTyping ?? this.dimWhileTyping,
       minutesPerPage: minutesPerPage ?? this.minutesPerPage,
+      recentFiles: recentFiles ?? this.recentFiles,
+    );
+  }
+
+  AppSettings withRecentFile(String path) {
+    return copyWith(
+      recentFiles: <String>[
+        path,
+        ...recentFiles.where((String file) => file != path),
+      ].take(recentFilesLimit).toList(),
+    );
+  }
+
+  AppSettings withoutRecentFile(String path) {
+    return copyWith(
+      recentFiles: recentFiles.where((String file) => file != path).toList(),
     );
   }
 
@@ -97,6 +123,7 @@ class AppSettings {
       'font': font.name,
       'dimWhileTyping': dimWhileTyping,
       'minutesPerPage': minutesPerPage,
+      'recentFiles': recentFiles,
     };
   }
 

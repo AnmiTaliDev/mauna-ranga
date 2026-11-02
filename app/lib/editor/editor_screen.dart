@@ -103,7 +103,7 @@ class _EditorScreenState extends State<EditorScreen> {
       await _editor.load('');
       return;
     }
-    await _run('Cannot open the file', () => _editor.open(path));
+    await _openPath(path);
   }
 
   Future<String> _savedText(String? path) async {
@@ -153,14 +153,16 @@ class _EditorScreenState extends State<EditorScreen> {
     _focus.stopWriting();
   }
 
-  Future<void> _run(String failure, Future<void> Function() action) async {
+  Future<bool> _run(String failure, Future<void> Function() action) async {
     try {
       await action();
+      return true;
     } on FileSystemException catch (error) {
       await _showError(failure, '${error.message}: ${error.path}.');
     } on String catch (error) {
       await _showError(failure, error);
     }
+    return false;
   }
 
   Future<void> _showError(String title, String message) async {
@@ -202,8 +204,20 @@ class _EditorScreenState extends State<EditorScreen> {
     );
     _documentFocus.requestFocus();
     if (file != null) {
-      await _run('Cannot open the file', () => _editor.open(file.path));
+      await _openPath(file.path);
     }
+  }
+
+  Future<void> _openPath(String path) async {
+    final bool opened = await _run(
+      'Cannot open the file',
+      () => _editor.open(path),
+    );
+    widget.onSettingsChanged(
+      opened
+          ? widget.settings.withRecentFile(path)
+          : widget.settings.withoutRecentFile(path),
+    );
   }
 
   Future<void> _save() async {
@@ -212,13 +226,23 @@ class _EditorScreenState extends State<EditorScreen> {
       await _saveAs();
       return;
     }
-    await _run('Cannot save the file', () => _editor.save(path));
+    await _saveTo(path);
+  }
+
+  Future<void> _saveTo(String path) async {
+    final bool saved = await _run(
+      'Cannot save the file',
+      () => _editor.save(path),
+    );
+    if (saved) {
+      widget.onSettingsChanged(widget.settings.withRecentFile(path));
+    }
   }
 
   Future<void> _saveAs() async {
     final String? path = await _saveLocation(fountainFiles, 'fountain');
     if (path != null) {
-      await _run('Cannot save the file', () => _editor.save(path));
+      await _saveTo(path);
     }
   }
 
@@ -395,6 +419,12 @@ class _EditorScreenState extends State<EditorScreen> {
                           label: 'File',
                           entries: <MenuEntry>[
                             MenuEntry('Open', _open, shortcut: 'Ctrl+O'),
+                            for (final String file
+                                in widget.settings.recentFiles)
+                              MenuEntry(
+                                'Open ${file.split(Platform.pathSeparator).last}',
+                                () => _openPath(file),
+                              ),
                             MenuEntry('Save', _save, shortcut: 'Ctrl+S'),
                             MenuEntry(
                               'Save as',

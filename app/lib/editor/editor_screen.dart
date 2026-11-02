@@ -610,6 +610,7 @@ class _EditorScreenState extends State<EditorScreen> {
                           ),
                           Expanded(
                             child: MaunaDocumentCanvas(
+                              key: ValueKey<int>(_editor.loadCount),
                               controller: _editor.text,
                               focusNode: _documentFocus,
                               placeholder: 'Start writing',

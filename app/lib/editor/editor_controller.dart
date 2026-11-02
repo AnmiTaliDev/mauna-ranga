@@ -40,6 +40,7 @@ class EditorController extends ChangeNotifier {
   CompletionSession? _completion;
 
   String? path;
+  int loadCount = 0;
   List<OutlineEntry> outline = <OutlineEntry>[];
   int words = 0;
   int? pages;
@@ -67,6 +68,7 @@ class EditorController extends ChangeNotifier {
     await _replaceHandle(source);
     this.path = path;
     _savedText = source;
+    loadCount++;
     text.value = TextEditingValue(
       text: source,
       selection: const TextSelection.collapsed(offset: 0),

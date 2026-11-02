@@ -13,6 +13,7 @@ import '../settings/settings_dialog.dart';
 import 'command_palette_commands.dart';
 import 'dialogs.dart';
 import 'editor_controller.dart';
+import 'find_dialog.dart';
 import 'toolbar_menu.dart';
 
 const XTypeGroup fountainFiles = XTypeGroup(
@@ -223,6 +224,21 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _moveSceneDown() => _editor.moveCurrentScene(1);
 
+  Future<void> _openFind() async {
+    final TextSelection selection = _editor.text.selection;
+    final String selected = selection.isValid && !selection.isCollapsed
+        ? selection.textInside(_editor.text.text)
+        : '';
+    await showMaunaDialog<void>(
+      context: context,
+      builder: (BuildContext context) => FindReplaceDialog(
+        text: _editor.text,
+        initialQuery: selected.contains('\n') ? '' : selected,
+      ),
+    );
+    _documentFocus.requestFocus();
+  }
+
   Future<void> _openPalette() async {
     await showMaunaPopup<void>(
       context: context,
@@ -230,6 +246,7 @@ class _EditorScreenState extends State<EditorScreen> {
         commands: editorCommands(
           outline: _editor.outline,
           goTo: _goTo,
+          find: _openFind,
           moveSceneUp: _moveSceneUp,
           moveSceneDown: _moveSceneDown,
           open: _open,
@@ -305,6 +322,8 @@ class _EditorScreenState extends State<EditorScreen> {
               _moveSceneDown,
           const SingleActivator(LogicalKeyboardKey.escape):
               _focus.exitFocusMode,
+          const SingleActivator(LogicalKeyboardKey.keyF, control: true):
+              _openFind,
           const SingleActivator(LogicalKeyboardKey.keyO, control: true): _open,
           const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
           const SingleActivator(

@@ -34,7 +34,30 @@ flutter_rust_bridge_codegen generate
 
 ## Usage
 
-The toolbar has the File and View menus and the Settings button. Shortcuts are the same as in the `mauna` demo: Ctrl+K opens the command palette, Ctrl+B toggles the sidebar, Ctrl+, opens settings, Ctrl+Shift+F toggles focus mode, Escape leaves focus mode. Ctrl+O opens a file, Ctrl+S saves it, Ctrl+Shift+S saves it under a new name. A path passed on the command line is opened at start.
+The toolbar has the File and View menus and the Settings button. The File menu opens, saves, imports FDX and exports to PDF, FDX, HTML and plain text, and lists the ten most recent files. The View menu holds the command palette, the sidebar, find and replace, statistics, scene moves and focus mode. Most menu commands are also in the command palette.
+
+Shortcuts:
+
+| Shortcut | Action |
+|---|---|
+| Ctrl+O, Ctrl+S, Ctrl+Shift+S | Open, save, save as |
+| Ctrl+K | Command palette |
+| Ctrl+B | Toggle the sidebar |
+| Ctrl+, | Settings |
+| Ctrl+F | Find and replace |
+| Alt+Up, Alt+Down | Move the current scene up or down |
+| Tab | Complete a character name or a scene location at the end of the line |
+| Ctrl+Shift+F, Escape | Enter and leave focus mode |
+
+A path passed on the command line is opened at start.
+
+Tab completes only on a line that follows a blank line and holds no lowercase letters, or starts with a scene prefix such as `INT.`. Candidates come from the character names and scene locations already in the document, most frequent first. Pressing Tab again cycles through the matches.
+
+Find and replace ignores case and has a whole word switch, so replacing `ST` with `STEEL` leaves `STELLA` alone. Replace all renames a character in the whole text. Statistics lists the speeches and dialogue words of every character.
+
+Moving a scene swaps it with the neighbouring scene. A scene does not move across a section heading.
+
+An unsaved document is copied to `recovery.json` in the settings directory two seconds after the last edit. If the app starts and finds a copy that differs from the file on disk, it offers to restore it. Saving, opening a file and discarding remove the copy. There is one copy for the whole app, so two running instances overwrite each other.
 
 The sidebar lists sections and scene headings. The status bar shows words, pages and runtime from the engine. The panels dim while you type and return to full contrast when the pointer moves or the selection changes.
 
@@ -50,6 +73,8 @@ Settings are stored in `$XDG_CONFIG_HOME/mauna-ranga/settings.json` (`~/.config/
 - Document font: Courier Prime or JetBrains Mono. The font is used in the editor and in PDF export. Courier Prime has no Cyrillic glyphs, so documents in Russian need JetBrains Mono.
 - Screen minutes per page for the runtime estimate
 - Dimming of the panels while typing
+- PDF export: title page on or off, page numbers on or off, watermark text
+- The list of recent files
 
 ## Editor highlighting
 

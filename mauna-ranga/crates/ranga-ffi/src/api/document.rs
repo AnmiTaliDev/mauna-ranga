@@ -91,6 +91,12 @@ pub struct DocumentStats {
     pub runtime_minutes: f32,
 }
 
+pub struct CharacterStat {
+    pub name: String,
+    pub speeches: u32,
+    pub words: u32,
+}
+
 pub struct PageSnapshot {
     pub number: u32,
     pub first_element: u32,
@@ -155,6 +161,20 @@ pub fn document_outline(handle: &DocumentHandle) -> Result<Vec<OutlineEntry>, St
 #[frb(sync)]
 pub fn word_count(handle: &DocumentHandle) -> Result<u32, String> {
     Ok(handle.current()?.word_count())
+}
+
+#[frb(sync)]
+pub fn document_character_stats(handle: &DocumentHandle) -> Result<Vec<CharacterStat>, String> {
+    Ok(handle
+        .current()?
+        .character_stats()
+        .into_iter()
+        .map(|stat| CharacterStat {
+            name: stat.name,
+            speeches: stat.speeches,
+            words: stat.words,
+        })
+        .collect())
 }
 
 pub async fn document_stats(

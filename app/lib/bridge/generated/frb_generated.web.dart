@@ -59,6 +59,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int dco_decode_box_autoadd_u_32(dynamic raw);
 
   @protected
+  CharacterStat dco_decode_character_stat(dynamic raw);
+
+  @protected
   DocumentSnapshot dco_decode_document_snapshot(dynamic raw);
 
   @protected
@@ -81,6 +84,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 dco_decode_i_64(dynamic raw);
+
+  @protected
+  List<CharacterStat> dco_decode_list_character_stat(dynamic raw);
 
   @protected
   List<ElementSnapshot> dco_decode_list_element_snapshot(dynamic raw);
@@ -166,6 +172,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
+  CharacterStat sse_decode_character_stat(SseDeserializer deserializer);
+
+  @protected
   DocumentSnapshot sse_decode_document_snapshot(SseDeserializer deserializer);
 
   @protected
@@ -188,6 +197,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
+  List<CharacterStat> sse_decode_list_character_stat(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<ElementSnapshot> sse_decode_list_element_snapshot(
@@ -292,6 +306,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
 
   @protected
+  void sse_encode_character_stat(CharacterStat self, SseSerializer serializer);
+
+  @protected
   void sse_encode_document_snapshot(
     DocumentSnapshot self,
     SseSerializer serializer,
@@ -320,6 +337,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_character_stat(
+    List<CharacterStat> self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_element_snapshot(

@@ -26,6 +26,9 @@ List<OutlineEntry> documentOutline({required DocumentHandle handle}) =>
 int wordCount({required DocumentHandle handle}) =>
     RustLib.instance.api.crateApiDocumentWordCount(handle: handle);
 
+List<CharacterStat> documentCharacterStats({required DocumentHandle handle}) =>
+    RustLib.instance.api.crateApiDocumentDocumentCharacterStats(handle: handle);
+
 Future<DocumentStats> documentStats({
   required DocumentHandle handle,
   required PageSettings settings,
@@ -39,6 +42,30 @@ Future<List<PageSnapshot>> paginate({required DocumentHandle handle}) =>
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<DocumentHandle>>
 abstract class DocumentHandle implements RustOpaqueInterface {}
+
+class CharacterStat {
+  final String name;
+  final int speeches;
+  final int words;
+
+  const CharacterStat({
+    required this.name,
+    required this.speeches,
+    required this.words,
+  });
+
+  @override
+  int get hashCode => name.hashCode ^ speeches.hashCode ^ words.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CharacterStat &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          speeches == other.speeches &&
+          words == other.words;
+}
 
 class DocumentSnapshot {
   final int first;

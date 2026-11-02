@@ -34,6 +34,8 @@ enum DocumentFont {
   final bool hasCyrillic;
 }
 
+enum PaperChoice { usLetter, a4 }
+
 enum AppLanguage {
   system(null),
   english(Locale('en')),
@@ -58,6 +60,7 @@ class AppSettings {
     this.pdfPageNumbers = true,
     this.pdfNotesPage = false,
     this.language = AppLanguage.system,
+    this.paper = PaperChoice.usLetter,
     this.pdfWatermark = '',
   });
 
@@ -79,6 +82,7 @@ class AppSettings {
         json['language'],
         defaults.language,
       ),
+      paper: _byName(PaperChoice.values, json['paper'], defaults.paper),
       dimWhileTyping: dim is bool ? dim : defaults.dimWhileTyping,
       minutesPerPage: minutes is num && minutes > 0
           ? minutes.toDouble()
@@ -115,6 +119,8 @@ class AppSettings {
 
   final AppLanguage language;
 
+  final PaperChoice paper;
+
   final String pdfWatermark;
 
   AppSettings copyWith({
@@ -128,6 +134,7 @@ class AppSettings {
     bool? pdfPageNumbers,
     bool? pdfNotesPage,
     AppLanguage? language,
+    PaperChoice? paper,
     String? pdfWatermark,
   }) {
     return AppSettings(
@@ -141,6 +148,7 @@ class AppSettings {
       pdfPageNumbers: pdfPageNumbers ?? this.pdfPageNumbers,
       pdfNotesPage: pdfNotesPage ?? this.pdfNotesPage,
       language: language ?? this.language,
+      paper: paper ?? this.paper,
       pdfWatermark: pdfWatermark ?? this.pdfWatermark,
     );
   }
@@ -172,6 +180,7 @@ class AppSettings {
       'pdfPageNumbers': pdfPageNumbers,
       'pdfNotesPage': pdfNotesPage,
       'language': language.name,
+      'paper': paper.name,
       'pdfWatermark': pdfWatermark,
     };
   }

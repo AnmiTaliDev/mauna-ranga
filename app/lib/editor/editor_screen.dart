@@ -79,6 +79,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void initState() {
     super.initState();
     _editor.minutesPerPage = widget.settings.minutesPerPage;
+    _editor.paper = widget.settings.paper;
     _editor.addListener(_onChanged);
     _editor.text.addListener(_onTextChanged);
     _focus.addListener(_onChanged);
@@ -93,6 +94,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void didUpdateWidget(EditorScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _editor.minutesPerPage = widget.settings.minutesPerPage;
+    _editor.paper = widget.settings.paper;
   }
 
   @override
@@ -362,7 +364,10 @@ class _EditorScreenState extends State<EditorScreen> {
   Future<void> _exportText() async {
     final String? path = await _saveLocation(textFiles, 'txt');
     if (path != null) {
-      await _run(_l10n.errorExportText, () => _editor.exportText(path));
+      await _run(
+        _l10n.errorExportText,
+        () => _editor.exportText(path, widget.settings),
+      );
     }
   }
 

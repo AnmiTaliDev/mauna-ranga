@@ -408,4 +408,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get showToolbar => 'Показать панель инструментов';
+
+  @override
+  String get paperSize => 'Формат бумаги';
+
+  @override
+  String get paperSizeDescription =>
+      'Размер страницы в PDF и при подсчёте страниц.';
+
+  @override
+  String get paperUsLetter => 'US Letter';
+
+  @override
+  String get paperA4 => 'A4';
 }

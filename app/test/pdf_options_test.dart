@@ -52,6 +52,23 @@ void main() {
       AppLocalizationsEn(),
     );
     final List<int> withNotes = File('${dir.path}/notes.pdf').readAsBytesSync();
+    await editor.exportPdf(
+      '${dir.path}/a4.pdf',
+      const AppSettings(paper: PaperChoice.a4),
+      AppLocalizationsEn(),
+    );
+    final String a4 = String.fromCharCodes(
+      File('${dir.path}/a4.pdf').readAsBytesSync(),
+    );
+    expect(a4, contains('/MediaBox[0 0 595.44'));
+    await editor.exportText(
+      '${dir.path}/a4.txt',
+      const AppSettings(paper: PaperChoice.a4),
+    );
+    expect(
+      File('${dir.path}/a4.txt').readAsStringSync(),
+      contains('INT. ROOM'),
+    );
     final List<int> byDefault = File(
       '${dir.path}/default.pdf',
     ).readAsBytesSync();

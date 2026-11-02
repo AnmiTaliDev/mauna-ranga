@@ -199,5 +199,9 @@
   "aboutComponentsText": "Mauna Ranga engine, mauna design system, Courier Prime, JetBrains Mono, Inter.",
   "aboutLicense": "License",
   "aboutLicenseText": "Apache License 2.0.",
-  "showToolbar": "Show toolbar"
+  "showToolbar": "Show toolbar",
+  "paperSize": "Paper size",
+  "paperSizeDescription": "Page size of the PDF and of the page count.",
+  "paperUsLetter": "US Letter",
+  "paperA4": "A4"
 }

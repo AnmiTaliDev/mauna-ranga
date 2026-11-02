@@ -829,6 +829,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show toolbar'**
   String get showToolbar;
+
+  /// No description provided for @paperSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper size'**
+  String get paperSize;
+
+  /// No description provided for @paperSizeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Page size of the PDF and of the page count.'**
+  String get paperSizeDescription;
+
+  /// No description provided for @paperUsLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'US Letter'**
+  String get paperUsLetter;
+
+  /// No description provided for @paperA4.
+  ///
+  /// In en, this message translates to:
+  /// **'A4'**
+  String get paperA4;
 }
 
 class _AppLocalizationsDelegate

@@ -32,6 +32,15 @@ extension DocumentFontLabel on DocumentFont {
   }
 }
 
+extension PaperChoiceLabel on PaperChoice {
+  String label(AppLocalizations l10n) {
+    return switch (this) {
+      PaperChoice.usLetter => l10n.paperUsLetter,
+      PaperChoice.a4 => l10n.paperA4,
+    };
+  }
+}
+
 extension AppLanguageLabel on AppLanguage {
   String label(AppLocalizations l10n) {
     return switch (this) {

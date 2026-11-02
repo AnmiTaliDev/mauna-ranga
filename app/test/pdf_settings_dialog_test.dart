@@ -56,11 +56,15 @@ void main() {
       ),
     );
     await settle(tester);
+    await tester.ensureVisible(find.text('A4'));
+    await tester.tap(find.text('A4'));
+    await settle(tester);
 
     final AppSettings saved =
         await tester.runAsync(SettingsStore(file).load) as AppSettings;
     expect(saved.pdfWatermark, 'DRAFT');
     expect(saved.pdfTitlePage, isFalse);
     expect(saved.pdfPageNumbers, isTrue);
+    expect(saved.paper, PaperChoice.a4);
   });
 }

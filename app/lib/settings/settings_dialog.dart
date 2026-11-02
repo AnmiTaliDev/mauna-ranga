@@ -249,6 +249,24 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
+          label: l10n.paperSize,
+          description: l10n.paperSizeDescription,
+          child: _Grid(
+            children: <Widget>[
+              for (final PaperChoice paper in PaperChoice.values)
+                _ChoiceTile(
+                  selected: settings.paper == paper,
+                  onTap: () => onChanged(settings.copyWith(paper: paper)),
+                  builder: (bool strong) => _CenteredLabel(
+                    label: paper.label(l10n),
+                    strong: strong,
+                    selected: settings.paper == paper,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        _Group(
           label: l10n.settingsRuntime,
           description: l10n.settingsRuntimeDescription,
           child: _Grid(

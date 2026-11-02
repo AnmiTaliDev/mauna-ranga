@@ -74,6 +74,8 @@ void main() {
       'appTitle',
       'languageEnglish',
       'languageRussian',
+      'paperUsLetter',
+      'paperA4',
       'aboutLicenseText',
     };
     for (final String key in en.keys.where((String k) => !k.startsWith('@'))) {

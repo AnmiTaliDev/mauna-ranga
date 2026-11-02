@@ -121,5 +121,9 @@
   "aboutComponentsText": "Движок Mauna Ranga, дизайн-система mauna, Courier Prime, JetBrains Mono, Inter.",
   "aboutLicense": "Лицензия",
   "aboutLicenseText": "Apache License 2.0.",
-  "showToolbar": "Показать панель инструментов"
+  "showToolbar": "Показать панель инструментов",
+  "paperSize": "Формат бумаги",
+  "paperSizeDescription": "Размер страницы в PDF и при подсчёте страниц.",
+  "paperUsLetter": "US Letter",
+  "paperA4": "A4"
 }

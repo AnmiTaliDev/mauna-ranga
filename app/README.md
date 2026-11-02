@@ -73,6 +73,8 @@ Settings are stored in `$XDG_CONFIG_HOME/mauna-ranga/settings.json` (`~/.config/
 - Theme preset and accent color
 - Document font: Courier Prime or JetBrains Mono. The font is used in the editor and in PDF export. Courier Prime has no Cyrillic glyphs, so documents in Russian need JetBrains Mono.
 - Screen minutes per page for the runtime estimate
+- Paper size: US Letter or A4, used for pagination, the page count and PDF and text export
+- Interface language
 - Dimming of the panels while typing
 - PDF export: title page on or off, page numbers on or off, a notes page on or off, watermark text
 - The list of recent files

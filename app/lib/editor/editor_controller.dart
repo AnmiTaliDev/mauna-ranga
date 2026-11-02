@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import '../bridge/generated/api/document.dart';
 import '../bridge/generated/api/export.dart' as bridge;
 import '../bridge/generated/api/import.dart' as importer;
+import '../bridge/generated/api/paper.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/app_localizations_en.dart';
 import '../recovery/recovery_store.dart';
@@ -16,6 +17,13 @@ import 'fountain_elements.dart';
 import 'completion.dart';
 import 'fountain_text_controller.dart';
 import 'scene_order.dart';
+
+PaperSize _bridgePaper(PaperChoice paper) {
+  return switch (paper) {
+    PaperChoice.usLetter => PaperSize.usLetter,
+    PaperChoice.a4 => PaperSize.a4,
+  };
+}
 
 AppLocalizations pdfLabels(AppSettings settings, AppLocalizations l10n) {
   return settings.font.hasCyrillic ? l10n : AppLocalizationsEn();
@@ -52,6 +60,16 @@ class EditorController extends ChangeNotifier {
   int? pages;
   double? runtimeMinutes;
   double _minutesPerPage = const AppSettings().minutesPerPage;
+
+  PaperChoice _paper = const AppSettings().paper;
+
+  set paper(PaperChoice value) {
+    if (value == _paper) {
+      return;
+    }
+    _paper = value;
+    _scheduleStats();
+  }
 
   set minutesPerPage(double value) {
     if (value == _minutesPerPage) {
@@ -128,6 +146,7 @@ class EditorController extends ChangeNotifier {
         titlePage: settings.pdfTitlePage,
         pageNumbers: settings.pdfPageNumbers,
         notesPage: settings.pdfNotesPage,
+        paper: _bridgePaper(settings.paper),
         notesTitle: labels.notesPageTitle,
         notesBeforeFirstScene: labels.notesBeforeFirstScene,
         watermark: settings.pdfWatermark,
@@ -164,8 +183,13 @@ class EditorController extends ChangeNotifier {
     await File(path).writeAsString(await bridge.exportHtml(handle: _handle!));
   }
 
-  Future<void> exportText(String path) async {
-    await File(path).writeAsString(await bridge.exportText(handle: _handle!));
+  Future<void> exportText(String path, AppSettings settings) async {
+    await File(path).writeAsString(
+      await bridge.exportText(
+        handle: _handle!,
+        paper: _bridgePaper(settings.paper),
+      ),
+    );
   }
 
   List<NoteItem> notes() {
@@ -311,7 +335,10 @@ class EditorController extends ChangeNotifier {
     final int generation = _generation;
     final DocumentStats stats = await documentStats(
       handle: _handle!,
-      settings: PageSettings(minutesPerPage: _minutesPerPage),
+      settings: PageSettings(
+        minutesPerPage: _minutesPerPage,
+        paper: _bridgePaper(_paper),
+      ),
     );
     if (generation != _generation) {
       return;

@@ -406,4 +406,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showToolbar => 'Show toolbar';
+
+  @override
+  String get paperSize => 'Paper size';
+
+  @override
+  String get paperSizeDescription =>
+      'Page size of the PDF and of the page count.';
+
+  @override
+  String get paperUsLetter => 'US Letter';
+
+  @override
+  String get paperA4 => 'A4';
 }

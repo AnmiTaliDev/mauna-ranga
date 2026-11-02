@@ -252,7 +252,7 @@ class _EditorScreenState extends State<EditorScreen> {
     if (path != null) {
       await _run(
         'Cannot export to PDF',
-        () => _editor.exportPdf(path, widget.settings.font),
+        () => _editor.exportPdf(path, widget.settings),
       );
     }
   }

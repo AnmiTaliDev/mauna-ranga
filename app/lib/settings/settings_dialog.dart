@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
+import '../widgets/dialog_text_field.dart';
 import 'app_settings.dart';
 
 const double settingsBodyHeight = 360;
@@ -200,6 +201,33 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
+          label: 'PDF title page',
+          description: 'Print the title page as the first page.',
+          child: _OnOff(
+            value: settings.pdfTitlePage,
+            onChanged: (bool value) =>
+                onChanged(settings.copyWith(pdfTitlePage: value)),
+          ),
+        ),
+        _Group(
+          label: 'PDF page numbers',
+          description: 'Print the page number on every page except the first.',
+          child: _OnOff(
+            value: settings.pdfPageNumbers,
+            onChanged: (bool value) =>
+                onChanged(settings.copyWith(pdfPageNumbers: value)),
+          ),
+        ),
+        _Group(
+          label: 'PDF watermark',
+          description: 'Diagonal text on every page. Leave empty for none.',
+          child: _WatermarkField(
+            text: settings.pdfWatermark,
+            onChanged: (String value) =>
+                onChanged(settings.copyWith(pdfWatermark: value)),
+          ),
+        ),
+        _Group(
           label: 'Runtime estimate',
           description: 'Screen minutes per page.',
           child: _Grid(
@@ -220,6 +248,67 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _OnOff extends StatelessWidget {
+  const _OnOff({required this.value, required this.onChanged});
+
+  final bool value;
+
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return _Grid(
+      children: <Widget>[
+        for (final bool choice in <bool>[true, false])
+          _ChoiceTile(
+            selected: value == choice,
+            onTap: () => onChanged(choice),
+            builder: (bool strong) => _CenteredLabel(
+              label: choice ? 'On' : 'Off',
+              strong: strong,
+              selected: value == choice,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _WatermarkField extends StatefulWidget {
+  const _WatermarkField({required this.text, required this.onChanged});
+
+  final String text;
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  State<_WatermarkField> createState() => _WatermarkFieldState();
+}
+
+class _WatermarkFieldState extends State<_WatermarkField> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.text,
+  );
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DialogTextField(
+      controller: _controller,
+      focusNode: _focusNode,
+      placeholder: 'No watermark',
+      onChanged: widget.onChanged,
     );
   }
 }

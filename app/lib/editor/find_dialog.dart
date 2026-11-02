@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
+import '../widgets/dialog_text_field.dart';
 import 'search.dart';
 
 class FindReplaceDialog extends StatefulWidget {
@@ -73,7 +74,7 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            _Field(
+            DialogTextField(
               controller: _find,
               focusNode: _findFocus,
               placeholder: 'Find',
@@ -81,7 +82,7 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
               onSubmitted: _next,
             ),
             SizedBox(height: theme.spacing.sm),
-            _Field(
+            DialogTextField(
               controller: _replace,
               focusNode: _replaceFocus,
               placeholder: 'Replace with',
@@ -111,70 +112,6 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Field extends StatelessWidget {
-  const _Field({
-    required this.controller,
-    required this.focusNode,
-    required this.placeholder,
-    required this.onSubmitted,
-    this.autofocus = false,
-  });
-
-  final TextEditingController controller;
-
-  final FocusNode focusNode;
-
-  final String placeholder;
-
-  final VoidCallback onSubmitted;
-
-  final bool autofocus;
-
-  @override
-  Widget build(BuildContext context) {
-    final MaunaThemeData theme = MaunaThemeData.of(context);
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: theme.spacing.sm,
-        vertical: theme.spacing.xs,
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(color: theme.line, width: theme.metrics.borderWidth),
-      ),
-      child: Stack(
-        children: <Widget>[
-          ListenableBuilder(
-            listenable: controller,
-            builder: (BuildContext context, Widget? child) {
-              return controller.text.isEmpty
-                  ? IgnorePointer(
-                      child: Text(
-                        placeholder,
-                        style: theme.uiStyle.copyWith(
-                          color: theme.textSecondary,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink();
-            },
-          ),
-          EditableText(
-            controller: controller,
-            focusNode: focusNode,
-            autofocus: autofocus,
-            style: theme.uiStyle,
-            cursorColor: theme.accent,
-            backgroundCursorColor: theme.textSecondary,
-            cursorWidth: theme.metrics.cursorWidth,
-            selectionColor: theme.selectionColor,
-            onSubmitted: (String value) => onSubmitted(),
-          ),
-        ],
       ),
     );
   }

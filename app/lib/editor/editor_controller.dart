@@ -93,8 +93,8 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> exportPdf(String path, DocumentFont font) async {
-    final String prefix = font.filePrefix;
+  Future<void> exportPdf(String path, AppSettings settings) async {
+    final String prefix = settings.font.filePrefix;
     final Uint8List bytes = await bridge.exportPdf(
       handle: _handle!,
       fonts: bridge.FontFiles(
@@ -102,6 +102,11 @@ class EditorController extends ChangeNotifier {
         bold: await _font('$prefix-Bold.ttf'),
         italic: await _font('$prefix-Italic.ttf'),
         boldItalic: await _font('$prefix-BoldItalic.ttf'),
+      ),
+      settings: bridge.PdfSettings(
+        titlePage: settings.pdfTitlePage,
+        pageNumbers: settings.pdfPageNumbers,
+        watermark: settings.pdfWatermark,
       ),
     );
     await File(path).writeAsBytes(bytes);

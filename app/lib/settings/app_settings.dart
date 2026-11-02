@@ -50,6 +50,9 @@ class AppSettings {
     this.dimWhileTyping = true,
     this.minutesPerPage = 1.0,
     this.recentFiles = const <String>[],
+    this.pdfTitlePage = true,
+    this.pdfPageNumbers = true,
+    this.pdfWatermark = '',
   });
 
   factory AppSettings.fromJson(Map<String, Object?> json) {
@@ -57,6 +60,9 @@ class AppSettings {
     final Object? dim = json['dimWhileTyping'];
     final Object? minutes = json['minutesPerPage'];
     final Object? recent = json['recentFiles'];
+    final Object? titlePage = json['pdfTitlePage'];
+    final Object? pageNumbers = json['pdfPageNumbers'];
+    final Object? watermark = json['pdfWatermark'];
     return AppSettings(
       preset: _byName(ThemePreset.values, json['theme'], defaults.preset),
       accent: _byName(AccentChoice.values, json['accent'], defaults.accent),
@@ -68,6 +74,11 @@ class AppSettings {
       recentFiles: recent is List<Object?>
           ? recent.whereType<String>().take(recentFilesLimit).toList()
           : defaults.recentFiles,
+      pdfTitlePage: titlePage is bool ? titlePage : defaults.pdfTitlePage,
+      pdfPageNumbers: pageNumbers is bool
+          ? pageNumbers
+          : defaults.pdfPageNumbers,
+      pdfWatermark: watermark is String ? watermark : defaults.pdfWatermark,
     );
   }
 
@@ -83,6 +94,12 @@ class AppSettings {
 
   final List<String> recentFiles;
 
+  final bool pdfTitlePage;
+
+  final bool pdfPageNumbers;
+
+  final String pdfWatermark;
+
   AppSettings copyWith({
     ThemePreset? preset,
     AccentChoice? accent,
@@ -90,6 +107,9 @@ class AppSettings {
     bool? dimWhileTyping,
     double? minutesPerPage,
     List<String>? recentFiles,
+    bool? pdfTitlePage,
+    bool? pdfPageNumbers,
+    String? pdfWatermark,
   }) {
     return AppSettings(
       preset: preset ?? this.preset,
@@ -98,6 +118,9 @@ class AppSettings {
       dimWhileTyping: dimWhileTyping ?? this.dimWhileTyping,
       minutesPerPage: minutesPerPage ?? this.minutesPerPage,
       recentFiles: recentFiles ?? this.recentFiles,
+      pdfTitlePage: pdfTitlePage ?? this.pdfTitlePage,
+      pdfPageNumbers: pdfPageNumbers ?? this.pdfPageNumbers,
+      pdfWatermark: pdfWatermark ?? this.pdfWatermark,
     );
   }
 
@@ -124,6 +147,9 @@ class AppSettings {
       'dimWhileTyping': dimWhileTyping,
       'minutesPerPage': minutesPerPage,
       'recentFiles': recentFiles,
+      'pdfTitlePage': pdfTitlePage,
+      'pdfPageNumbers': pdfPageNumbers,
+      'pdfWatermark': pdfWatermark,
     };
   }
 

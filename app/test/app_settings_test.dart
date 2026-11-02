@@ -56,4 +56,25 @@ void main() {
       <String>['/a'],
     );
   });
+
+  test('PDF options default to a plain export and survive a round trip', () {
+    const AppSettings defaults = AppSettings();
+    expect(defaults.pdfTitlePage, isTrue);
+    expect(defaults.pdfPageNumbers, isTrue);
+    expect(defaults.pdfWatermark, '');
+    final AppSettings loaded = AppSettings.fromJson(
+      const AppSettings(
+        pdfTitlePage: false,
+        pdfPageNumbers: false,
+        pdfWatermark: 'DRAFT',
+      ).toJson(),
+    );
+    expect(loaded.pdfTitlePage, isFalse);
+    expect(loaded.pdfPageNumbers, isFalse);
+    expect(loaded.pdfWatermark, 'DRAFT');
+    expect(
+      AppSettings.fromJson(<String, Object?>{'pdfWatermark': 3}).pdfWatermark,
+      '',
+    );
+  });
 }

@@ -84,4 +84,34 @@ void main() {
       '',
     );
   });
+
+  test('the paper size defaults to US Letter and survives a round trip', () {
+    expect(const AppSettings().paper, PaperChoice.usLetter);
+    expect(
+      AppSettings.fromJson(
+        const AppSettings(paper: PaperChoice.a4).toJson(),
+      ).paper,
+      PaperChoice.a4,
+    );
+    expect(
+      AppSettings.fromJson(<String, Object?>{'paper': 'tabloid'}).paper,
+      PaperChoice.usLetter,
+    );
+  });
+
+  test('quick consecutive saves end with the last settings', () async {
+    final Directory dir = Directory.systemTemp.createTempSync('ranga_race');
+    addTearDown(() => dir.deleteSync(recursive: true));
+    final SettingsStore store = SettingsStore(
+      File('${dir.path}/settings.json'),
+    );
+    final List<Future<void>> writes = <Future<void>>[];
+    for (int i = 0; i < 40; i++) {
+      writes.add(store.save(AppSettings(pdfWatermark: 'mark $i' * 40)));
+    }
+    await Future.wait(writes);
+    final AppSettings loaded = await store.load();
+    expect(loaded.pdfWatermark, 'mark 39' * 40);
+    expect(File('${dir.path}/settings.json.tmp').existsSync(), isFalse);
+  });
 }

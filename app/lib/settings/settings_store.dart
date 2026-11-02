@@ -27,10 +27,20 @@ class SettingsStore {
     }
   }
 
-  Future<void> save(AppSettings settings) async {
+  Future<void> _queue = Future<void>.value();
+
+  Future<void> save(AppSettings settings) {
+    final Future<void> write = _queue.then((_) => _write(settings));
+    _queue = write.then((_) {}, onError: (Object _) {});
+    return write;
+  }
+
+  Future<void> _write(AppSettings settings) async {
     await file.parent.create(recursive: true);
-    await file.writeAsString(
+    final File temporary = File('${file.path}.tmp');
+    await temporary.writeAsString(
       const JsonEncoder.withIndent('  ').convert(settings.toJson()),
     );
+    await temporary.rename(file.path);
   }
 }

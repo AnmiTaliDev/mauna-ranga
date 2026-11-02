@@ -20,6 +20,12 @@ Future<Uint8List> exportPdf({
 Future<String> exportFdx({required DocumentHandle handle}) =>
     RustLib.instance.api.crateApiExportExportFdx(handle: handle);
 
+Future<String> exportHtml({required DocumentHandle handle}) =>
+    RustLib.instance.api.crateApiExportExportHtml(handle: handle);
+
+Future<String> exportText({required DocumentHandle handle}) =>
+    RustLib.instance.api.crateApiExportExportText(handle: handle);
+
 class FontFiles {
   final Uint8List regular;
   final Uint8List bold;

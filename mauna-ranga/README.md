@@ -2,7 +2,7 @@
 
 ## About
 
-Rust engine of Mauna Ranga, a Fountain screenplay editor. It parses Fountain, reparses edited parts of a document, paginates to the US screenplay format, counts words, pages and runtime, and exports PDF and Final Draft (FDX). It has no user interface.
+Rust engine of Mauna Ranga, a Fountain screenplay editor. It parses Fountain, reparses edited parts of a document, paginates to the US screenplay format, counts words, pages and runtime, and exports PDF, Final Draft (FDX), HTML and plain text. It has no user interface.
 
 ## Dependencies
 
@@ -27,6 +27,10 @@ cargo fmt --check
 | `ranga-layout` | Pagination, page geometry, runtime estimate |
 | `ranga-export` | PDF and FDX export |
 | `ranga_ffi` | API for the Flutter app, generated bindings in `app/lib/bridge/generated` |
+
+## Text and HTML export
+
+The plain text export prints the paginated layout in monospace columns without styling. Pages are separated by a form feed character and pages after the first start with a page number line. The HTML export is a single file with inline CSS. Dialogue is grouped in `dialogue-block` containers and dual dialogue pair is wrapped in a `dual` container.
 
 ## Parser
 

@@ -2,6 +2,8 @@ use std::fmt::Write;
 
 use ranga_core::{Document, ElementKind, Run};
 
+use crate::runs::{escape, trim_runs};
+
 const CENTERED_TITLE_KEYS: [&str; 5] = ["title", "credit", "author", "authors", "source"];
 
 struct Paragraph {
@@ -124,17 +126,6 @@ fn close_dual(paragraphs: &mut Vec<Paragraph>, dual_start: &mut Option<usize>) {
     }
 }
 
-fn trim_runs(mut runs: Vec<Run>, keep_indent: bool) -> Vec<Run> {
-    if !keep_indent && let Some(first) = runs.first_mut() {
-        first.text = first.text.trim_start().to_string();
-    }
-    if let Some(last) = runs.last_mut() {
-        last.text = last.text.trim_end().to_string();
-    }
-    runs.retain(|run| !run.text.is_empty());
-    runs
-}
-
 fn write_paragraph(out: &mut String, paragraph: &Paragraph, indent: usize) {
     let pad = " ".repeat(indent);
     out.push_str(&pad);
@@ -186,19 +177,4 @@ fn write_text(out: &mut String, run: &Run, indent: usize) {
             escape(&run.text)
         );
     }
-}
-
-fn escape(text: &str) -> String {
-    let mut escaped = String::with_capacity(text.len());
-    for c in text.chars() {
-        match c {
-            '&' => escaped.push_str("&amp;"),
-            '<' => escaped.push_str("&lt;"),
-            '>' => escaped.push_str("&gt;"),
-            '"' => escaped.push_str("&quot;"),
-            '\'' => escaped.push_str("&apos;"),
-            c => escaped.push(c),
-        }
-    }
-    escaped
 }

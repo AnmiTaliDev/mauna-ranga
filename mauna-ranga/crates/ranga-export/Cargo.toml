@@ -1,6 +1,6 @@
 [package]
 name = "ranga-export"
-description = "PDF and Final Draft (FDX) export for Fountain documents"
+description = "PDF, Final Draft (FDX), HTML and plain text export for Fountain documents"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

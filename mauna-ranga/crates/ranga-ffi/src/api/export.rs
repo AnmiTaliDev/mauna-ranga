@@ -1,4 +1,7 @@
-use ranga_export::{PdfFonts, PdfOptions, export_fdx as write_fdx, export_pdf as write_pdf};
+use ranga_export::{
+    PdfFonts, PdfOptions, export_fdx as write_fdx, export_html as write_html,
+    export_pdf as write_pdf, export_text as write_text,
+};
 use ranga_layout::{PageConfig, paginate};
 
 use crate::api::document::DocumentHandle;
@@ -41,4 +44,16 @@ pub async fn export_pdf(
 pub async fn export_fdx(handle: &DocumentHandle) -> Result<String, String> {
     let document = handle.current()?;
     Ok(write_fdx(&document))
+}
+
+pub async fn export_html(handle: &DocumentHandle) -> Result<String, String> {
+    let document = handle.current()?;
+    Ok(write_html(&document))
+}
+
+pub async fn export_text(handle: &DocumentHandle) -> Result<String, String> {
+    let document = handle.current()?;
+    let config = PageConfig::default();
+    let pages = paginate(&document, &config);
+    Ok(write_text(&document, &pages, &config))
 }

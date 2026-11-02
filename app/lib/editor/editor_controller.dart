@@ -96,6 +96,11 @@ class EditorController extends ChangeNotifier {
 
   bool get modified => text.text != _savedText;
 
+  Future<void> discardRecovery() async {
+    _recoveryTimer?.cancel();
+    await recovery?.clear();
+  }
+
   Future<void> exportPdf(String path, AppSettings settings) async {
     final String prefix = settings.font.filePrefix;
     final Uint8List bytes = await bridge.exportPdf(

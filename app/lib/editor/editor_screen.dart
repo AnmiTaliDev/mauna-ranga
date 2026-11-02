@@ -71,6 +71,7 @@ class _EditorScreenState extends State<EditorScreen> {
   final FocusNode _documentFocus = FocusNode();
   String _lastText = '';
   String _lastTitle = '';
+  bool _closing = false;
 
   @override
   void initState() {
@@ -80,6 +81,9 @@ class _EditorScreenState extends State<EditorScreen> {
     _editor.text.addListener(_onTextChanged);
     _focus.addListener(_onChanged);
     _documentFocus.addListener(_onChanged);
+    if (WindowControls.available) {
+      WindowControls.onCloseRequested(_requestClose);
+    }
     unawaited(_start());
   }
 
@@ -91,6 +95,9 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   void dispose() {
+    if (WindowControls.available) {
+      WindowControls.stopListening();
+    }
     _editor.dispose();
     _focus.dispose();
     _documentFocus.dispose();
@@ -147,6 +154,35 @@ class _EditorScreenState extends State<EditorScreen> {
     return restore;
   }
 
+  Future<void> _requestClose() async {
+    if (_closing) {
+      return;
+    }
+    _closing = true;
+    try {
+      if (_editor.modified && mounted) {
+        final UnsavedChoice choice = await showUnsavedDialog(
+          context: context,
+          name: _fileName(),
+        );
+        if (choice == UnsavedChoice.cancel) {
+          return;
+        }
+        if (choice == UnsavedChoice.save) {
+          await _save();
+          if (_editor.modified) {
+            return;
+          }
+        } else {
+          await _editor.discardRecovery();
+        }
+      }
+      WindowControls.forceClose();
+    } finally {
+      _closing = false;
+    }
+  }
+
   void _onChanged() {
     setState(() {});
     if (WindowControls.available) {
@@ -158,11 +194,15 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   }
 
-  String _windowTitle() {
+  String _fileName() {
     final String? path = _editor.path;
-    final String name = path == null
+    return path == null
         ? untitledName
         : path.split(Platform.pathSeparator).last;
+  }
+
+  String _windowTitle() {
+    final String name = _fileName();
     return _editor.modified ? '$name \u2022' : name;
   }
 

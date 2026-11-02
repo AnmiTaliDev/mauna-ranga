@@ -29,6 +29,18 @@ abstract final class WindowControls {
 
   static void close() => _call('close');
 
+  static void forceClose() => _call('forceClose');
+
+  static void onCloseRequested(Future<void> Function() handler) {
+    _channel.setMethodCallHandler((MethodCall call) async {
+      if (call.method == 'closeRequested') {
+        await handler();
+      }
+    });
+  }
+
+  static void stopListening() => _channel.setMethodCallHandler(null);
+
   static void setTitle(String title) => _call('setTitle', title);
 
   static void _call(String method, [Object? argument]) {

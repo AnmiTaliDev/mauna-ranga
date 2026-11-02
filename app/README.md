@@ -38,7 +38,7 @@ The toolbar has the File and View menus and the Settings button. Shortcuts are t
 
 The sidebar lists sections and scene headings. The status bar shows words, pages and runtime from the engine. The panels dim while you type and return to full contrast when the pointer moves or the selection changes.
 
-On Linux the system window frame is off and the app draws its own title bar: the file name with a dot when there are unsaved changes, minimize, maximize and close buttons. Dragging the bar moves the window, a double click maximizes it, the window edges and corners resize it. The window operations go through the `mauna_ranga/window` method channel in `linux/runner/window_channel.cc`. On Windows and macOS the system frame stays.
+On Linux the system window frame is off and the app draws its own title bar: the file name with a dot when there are unsaved changes, minimize, maximize and close buttons. Dragging the bar moves the window, a double click maximizes it, the window edges and corners resize it. Closing the window with unsaved changes asks to save, discard or cancel, whether the close comes from the button, Alt+F4 or the window manager: the runner holds the GTK `delete-event` and asks the app through `closeRequested`. The window operations go through the `mauna_ranga/window` method channel in `linux/runner/window_channel.cc`. On Windows and macOS the system frame stays.
 
 Files are opened, saved and exported through the system file dialog. Errors are shown in a `MaunaDialog`.
 

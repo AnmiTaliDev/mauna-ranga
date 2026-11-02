@@ -1,5 +1,22 @@
 #include "window_channel.h"
 
+struct WindowState {
+  GtkWindow* window;
+  FlMethodChannel* channel;
+  gboolean close_confirmed;
+};
+
+static gboolean on_delete_event(GtkWidget* widget, GdkEvent* event,
+                                gpointer user_data) {
+  WindowState* state = static_cast<WindowState*>(user_data);
+  if (state->close_confirmed) {
+    return FALSE;
+  }
+  fl_method_channel_invoke_method(state->channel, "closeRequested", nullptr,
+                                  nullptr, nullptr, nullptr);
+  return TRUE;
+}
+
 static void pointer_position(GtkWindow* window, gint* x, gint* y) {
   GdkDisplay* display = gtk_widget_get_display(GTK_WIDGET(window));
   GdkSeat* seat = gdk_display_get_default_seat(display);
@@ -15,7 +32,8 @@ static void respond_bad_arguments(FlMethodCall* call) {
 
 static void handle_call(FlMethodChannel* channel, FlMethodCall* call,
                         gpointer user_data) {
-  GtkWindow* window = GTK_WINDOW(user_data);
+  WindowState* state = static_cast<WindowState*>(user_data);
+  GtkWindow* window = state->window;
   const gchar* method = fl_method_call_get_name(call);
   FlValue* args = fl_method_call_get_args(call);
 
@@ -45,6 +63,9 @@ static void handle_call(FlMethodChannel* channel, FlMethodCall* call,
     }
   } else if (g_strcmp0(method, "close") == 0) {
     gtk_window_close(window);
+  } else if (g_strcmp0(method, "forceClose") == 0) {
+    state->close_confirmed = TRUE;
+    gtk_window_close(window);
   } else if (g_strcmp0(method, "setTitle") == 0) {
     if (args == nullptr || fl_value_get_type(args) != FL_VALUE_TYPE_STRING) {
       respond_bad_arguments(call);
@@ -63,7 +84,11 @@ FlMethodChannel* window_channel_new(FlView* view, GtkWindow* window) {
   FlMethodChannel* channel = fl_method_channel_new(
       fl_engine_get_binary_messenger(fl_view_get_engine(view)),
       "mauna_ranga/window", FL_METHOD_CODEC(codec));
-  fl_method_channel_set_method_call_handler(channel, handle_call, window,
-                                            nullptr);
+  WindowState* state = g_new0(WindowState, 1);
+  state->window = window;
+  state->channel = channel;
+  g_signal_connect(window, "delete-event", G_CALLBACK(on_delete_event), state);
+  fl_method_channel_set_method_call_handler(channel, handle_call, state,
+                                            g_free);
   return channel;
 }

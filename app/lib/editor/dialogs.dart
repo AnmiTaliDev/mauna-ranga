@@ -63,3 +63,49 @@ Future<bool> showConfirmDialog({
   );
   return confirmed ?? false;
 }
+
+enum UnsavedChoice { save, discard, cancel }
+
+Future<UnsavedChoice> showUnsavedDialog({
+  required BuildContext context,
+  required String name,
+}) async {
+  final UnsavedChoice? choice = await showMaunaDialog<UnsavedChoice>(
+    context: context,
+    builder: (BuildContext context) {
+      final MaunaThemeData theme = MaunaThemeData.of(context);
+      return MaunaDialog(
+        title: 'Unsaved changes',
+        child: Padding(
+          padding: EdgeInsets.all(theme.spacing.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                'Save changes to $name before closing?',
+                style: theme.uiStyle,
+              ),
+              SizedBox(height: theme.spacing.md),
+              Wrap(
+                spacing: theme.spacing.xs,
+                children: <Widget>[
+                  for (final UnsavedChoice option in UnsavedChoice.values)
+                    MaunaToolbarChip(
+                      label: switch (option) {
+                        UnsavedChoice.save => 'Save',
+                        UnsavedChoice.discard => 'Discard',
+                        UnsavedChoice.cancel => 'Cancel',
+                      },
+                      onPressed: () => Navigator.of(context).pop(option),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+  return choice ?? UnsavedChoice.cancel;
+}

@@ -589,6 +589,7 @@ fn wire__crate__api__export__export_text_impl(
             let api_handle = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<DocumentHandle>,
             >>::sse_decode(&mut deserializer);
+            let api_paper = <crate::api::paper::PaperSize>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, String>(
@@ -612,7 +613,8 @@ fn wire__crate__api__export__export_text_impl(
                             }
                         }
                         let api_handle_guard = api_handle_guard.unwrap();
-                        let output_ok = crate::api::export::export_text(&*api_handle_guard).await?;
+                        let output_ok =
+                            crate::api::export::export_text(&*api_handle_guard, api_paper).await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -716,6 +718,7 @@ fn wire__crate__api__document__paginate_impl(
             let api_handle = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<DocumentHandle>,
             >>::sse_decode(&mut deserializer);
+            let api_paper = <crate::api::paper::PaperSize>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, String>(
@@ -739,7 +742,8 @@ fn wire__crate__api__document__paginate_impl(
                             }
                         }
                         let api_handle_guard = api_handle_guard.unwrap();
-                        let output_ok = crate::api::document::paginate(&*api_handle_guard).await?;
+                        let output_ok =
+                            crate::api::document::paginate(&*api_handle_guard, api_paper).await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -1111,8 +1115,10 @@ impl SseDecode for crate::api::document::PageSettings {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_minutesPerPage = <f32>::sse_decode(deserializer);
+        let mut var_paper = <crate::api::paper::PaperSize>::sse_decode(deserializer);
         return crate::api::document::PageSettings {
             minutes_per_page: var_minutesPerPage,
+            paper: var_paper,
         };
     }
 }
@@ -1133,12 +1139,25 @@ impl SseDecode for crate::api::document::PageSnapshot {
     }
 }
 
+impl SseDecode for crate::api::paper::PaperSize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::paper::PaperSize::UsLetter,
+            1 => crate::api::paper::PaperSize::A4,
+            _ => unreachable!("Invalid variant for PaperSize: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for crate::api::export::PdfSettings {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_titlePage = <bool>::sse_decode(deserializer);
         let mut var_pageNumbers = <bool>::sse_decode(deserializer);
         let mut var_notesPage = <bool>::sse_decode(deserializer);
+        let mut var_paper = <crate::api::paper::PaperSize>::sse_decode(deserializer);
         let mut var_notesTitle = <String>::sse_decode(deserializer);
         let mut var_notesBeforeFirstScene = <String>::sse_decode(deserializer);
         let mut var_watermark = <String>::sse_decode(deserializer);
@@ -1146,6 +1165,7 @@ impl SseDecode for crate::api::export::PdfSettings {
             title_page: var_titlePage,
             page_numbers: var_pageNumbers,
             notes_page: var_notesPage,
+            paper: var_paper,
             notes_title: var_notesTitle,
             notes_before_first_scene: var_notesBeforeFirstScene,
             watermark: var_watermark,
@@ -1471,7 +1491,11 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::document::OutlineEntry>
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::document::PageSettings {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [self.minutes_per_page.into_into_dart().into_dart()].into_dart()
+        [
+            self.minutes_per_page.into_into_dart().into_dart(),
+            self.paper.into_into_dart().into_dart(),
+        ]
+        .into_dart()
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
@@ -1509,12 +1533,31 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::document::PageSnapshot>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::paper::PaperSize {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::UsLetter => 0.into_dart(),
+            Self::A4 => 1.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::api::paper::PaperSize {}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::paper::PaperSize>
+    for crate::api::paper::PaperSize
+{
+    fn into_into_dart(self) -> crate::api::paper::PaperSize {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::export::PdfSettings {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.title_page.into_into_dart().into_dart(),
             self.page_numbers.into_into_dart().into_dart(),
             self.notes_page.into_into_dart().into_dart(),
+            self.paper.into_into_dart().into_dart(),
             self.notes_title.into_into_dart().into_dart(),
             self.notes_before_first_scene.into_into_dart().into_dart(),
             self.watermark.into_into_dart().into_dart(),
@@ -1845,6 +1888,7 @@ impl SseEncode for crate::api::document::PageSettings {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <f32>::sse_encode(self.minutes_per_page, serializer);
+        <crate::api::paper::PaperSize>::sse_encode(self.paper, serializer);
     }
 }
 
@@ -1858,12 +1902,29 @@ impl SseEncode for crate::api::document::PageSnapshot {
     }
 }
 
+impl SseEncode for crate::api::paper::PaperSize {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::paper::PaperSize::UsLetter => 0,
+                crate::api::paper::PaperSize::A4 => 1,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for crate::api::export::PdfSettings {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <bool>::sse_encode(self.title_page, serializer);
         <bool>::sse_encode(self.page_numbers, serializer);
         <bool>::sse_encode(self.notes_page, serializer);
+        <crate::api::paper::PaperSize>::sse_encode(self.paper, serializer);
         <String>::sse_encode(self.notes_title, serializer);
         <String>::sse_encode(self.notes_before_first_scene, serializer);
         <String>::sse_encode(self.watermark, serializer);

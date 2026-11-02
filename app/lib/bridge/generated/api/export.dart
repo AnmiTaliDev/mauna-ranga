@@ -6,6 +6,7 @@
 import '../frb_generated.dart';
 import 'document.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'paper.dart';
 
 Future<Uint8List> exportPdf({
   required DocumentHandle handle,
@@ -23,8 +24,11 @@ Future<String> exportFdx({required DocumentHandle handle}) =>
 Future<String> exportHtml({required DocumentHandle handle}) =>
     RustLib.instance.api.crateApiExportExportHtml(handle: handle);
 
-Future<String> exportText({required DocumentHandle handle}) =>
-    RustLib.instance.api.crateApiExportExportText(handle: handle);
+Future<String> exportText({
+  required DocumentHandle handle,
+  required PaperSize paper,
+}) =>
+    RustLib.instance.api.crateApiExportExportText(handle: handle, paper: paper);
 
 class FontFiles {
   final Uint8List regular;
@@ -58,6 +62,7 @@ class PdfSettings {
   final bool titlePage;
   final bool pageNumbers;
   final bool notesPage;
+  final PaperSize paper;
   final String notesTitle;
   final String notesBeforeFirstScene;
   final String watermark;
@@ -66,6 +71,7 @@ class PdfSettings {
     required this.titlePage,
     required this.pageNumbers,
     required this.notesPage,
+    required this.paper,
     required this.notesTitle,
     required this.notesBeforeFirstScene,
     required this.watermark,
@@ -76,6 +82,7 @@ class PdfSettings {
       titlePage.hashCode ^
       pageNumbers.hashCode ^
       notesPage.hashCode ^
+      paper.hashCode ^
       notesTitle.hashCode ^
       notesBeforeFirstScene.hashCode ^
       watermark.hashCode;
@@ -88,6 +95,7 @@ class PdfSettings {
           titlePage == other.titlePage &&
           pageNumbers == other.pageNumbers &&
           notesPage == other.notesPage &&
+          paper == other.paper &&
           notesTitle == other.notesTitle &&
           notesBeforeFirstScene == other.notesBeforeFirstScene &&
           watermark == other.watermark;

@@ -1,5 +1,7 @@
 use ranga_core::{Run, parse_full, plain_text};
-use ranga_layout::{Align, PageConfig, estimated_runtime_minutes, page_length, paginate};
+use ranga_layout::{
+    Align, PageConfig, PaperSize, estimated_runtime_minutes, page_length, paginate,
+};
 
 fn text(runs: &[Run]) -> String {
     plain_text(runs)
@@ -180,4 +182,17 @@ fn action_breaks_at_a_line_when_no_sentence_ends() {
     let pages = paginate(&doc, &PageConfig::default());
     assert_eq!(pages.len(), 2);
     assert_eq!(text(&pages[0].lines.last().expect("line").runs), "four");
+}
+
+#[test]
+fn a4_keeps_the_text_area_of_us_letter() {
+    let letter = PageConfig::for_paper(PaperSize::UsLetter);
+    let a4 = PageConfig::for_paper(PaperSize::A4);
+    assert_eq!(letter, PageConfig::default());
+    assert_eq!(a4.page_width, 8.27);
+    assert_eq!(a4.page_height, 11.69);
+    assert_eq!(a4.lines_per_page(), letter.lines_per_page());
+    assert_eq!(a4.action, letter.action);
+    let doc = parse_full(&filler(120));
+    assert_eq!(paginate(&doc, &a4).len(), paginate(&doc, &letter).len());
 }

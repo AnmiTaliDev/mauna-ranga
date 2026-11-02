@@ -5,6 +5,7 @@ use ranga_export::{
 use ranga_layout::{PageConfig, paginate};
 
 use crate::api::document::DocumentHandle;
+use crate::api::paper::PaperSize;
 
 pub struct FontFiles {
     pub regular: Vec<u8>,
@@ -17,6 +18,7 @@ pub struct PdfSettings {
     pub title_page: bool,
     pub page_numbers: bool,
     pub notes_page: bool,
+    pub paper: PaperSize,
     pub notes_title: String,
     pub notes_before_first_scene: String,
     pub watermark: String,
@@ -28,7 +30,7 @@ pub async fn export_pdf(
     settings: PdfSettings,
 ) -> Result<Vec<u8>, String> {
     let document = handle.current()?;
-    let config = PageConfig::default();
+    let config = PageConfig::for_paper(settings.paper.into());
     let pages = paginate(&document, &config);
     let fonts = PdfFonts {
         regular: &fonts.regular,
@@ -57,9 +59,9 @@ pub async fn export_html(handle: &DocumentHandle) -> Result<String, String> {
     Ok(write_html(&document))
 }
 
-pub async fn export_text(handle: &DocumentHandle) -> Result<String, String> {
+pub async fn export_text(handle: &DocumentHandle, paper: PaperSize) -> Result<String, String> {
     let document = handle.current()?;
-    let config = PageConfig::default();
+    let config = PageConfig::for_paper(paper.into());
     let pages = paginate(&document, &config);
     Ok(write_text(&document, &pages, &config))
 }

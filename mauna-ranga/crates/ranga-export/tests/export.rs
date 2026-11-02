@@ -4,7 +4,7 @@ use ranga_core::parse_full;
 use ranga_export::{
     ExportError, PdfFonts, PdfOptions, export_fdx, export_html, export_pdf, export_text,
 };
-use ranga_layout::{PageConfig, paginate};
+use ranga_layout::{PageConfig, PaperSize, paginate};
 
 const SAMPLE: &str = "Title: _**BRICK & STEEL**_\nAuthor: Stu Maschwitz\nDraft date: 1/20/2012\n\nEXT. BRICK'S PATIO - DAY #1#\n\nA *gorgeous* day.\n\nSTEEL\n(beer raised)\nTo retirement.\n\nBRICK ^\nTo retirement.\n\nCUT TO:\n\n===\n\n> THE END <\n";
 
@@ -235,4 +235,35 @@ fn pdf_notes_page_is_added_only_when_asked_and_notes_exist() {
     assert_eq!(export(with_notes, false), 1);
     assert_eq!(export(with_notes, true), 2);
     assert_eq!(export("INT. DEPOT - NIGHT\n\nNo notes here.\n", true), 1);
+}
+
+#[test]
+fn pdf_page_size_follows_the_paper() {
+    let export = |paper: PaperSize| {
+        let doc = parse_full(SAMPLE);
+        let config = PageConfig::for_paper(paper);
+        let pages = paginate(&doc, &config);
+        let (regular, bold, italic, bold_italic) = (
+            font("CourierPrime-Regular.ttf"),
+            font("CourierPrime-Bold.ttf"),
+            font("CourierPrime-Italic.ttf"),
+            font("CourierPrime-BoldItalic.ttf"),
+        );
+        let fonts = PdfFonts {
+            regular: &regular,
+            bold: &bold,
+            italic: &italic,
+            bold_italic: &bold_italic,
+        };
+        let bytes = export_pdf(&doc, &pages, &config, &fonts, &PdfOptions::default()).expect("pdf");
+        String::from_utf8_lossy(&bytes).into_owned()
+    };
+    let letter = export(PaperSize::UsLetter);
+    assert!(letter.contains("/MediaBox[0 0 612"));
+    assert!(letter.contains("792"));
+    assert!(!letter.contains("595.44"));
+    let a4 = export(PaperSize::A4);
+    assert!(a4.contains("/MediaBox[0 0 595.44"));
+    assert!(a4.contains("841.68"));
+    assert!(!a4.contains("/MediaBox[0 0 612"));
 }

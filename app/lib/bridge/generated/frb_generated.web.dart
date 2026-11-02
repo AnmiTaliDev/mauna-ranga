@@ -9,6 +9,7 @@
 import 'api/document.dart';
 import 'api/export.dart';
 import 'api/import.dart';
+import 'api/paper.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -130,6 +131,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PageSnapshot dco_decode_page_snapshot(dynamic raw);
+
+  @protected
+  PaperSize dco_decode_paper_size(dynamic raw);
 
   @protected
   PdfSettings dco_decode_pdf_settings(dynamic raw);
@@ -269,6 +273,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PageSnapshot sse_decode_page_snapshot(SseDeserializer deserializer);
+
+  @protected
+  PaperSize sse_decode_paper_size(SseDeserializer deserializer);
 
   @protected
   PdfSettings sse_decode_pdf_settings(SseDeserializer deserializer);
@@ -437,6 +444,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_page_snapshot(PageSnapshot self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_paper_size(PaperSize self, SseSerializer serializer);
 
   @protected
   void sse_encode_pdf_settings(PdfSettings self, SseSerializer serializer);

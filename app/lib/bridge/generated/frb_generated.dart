@@ -6,6 +6,7 @@
 import 'api/document.dart';
 import 'api/export.dart';
 import 'api/import.dart';
+import 'api/paper.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';
@@ -120,7 +121,10 @@ abstract class RustLibApi extends BaseApi {
     required PdfSettings settings,
   });
 
-  Future<String> crateApiExportExportText({required DocumentHandle handle});
+  Future<String> crateApiExportExportText({
+    required DocumentHandle handle,
+    required PaperSize paper,
+  });
 
   Future<String> crateApiImportImportFdx({required String xml});
 
@@ -128,6 +132,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<List<PageSnapshot>> crateApiDocumentPaginate({
     required DocumentHandle handle,
+    required PaperSize paper,
   });
 
   int crateApiDocumentWordCount({required DocumentHandle handle});
@@ -468,7 +473,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<String> crateApiExportExportText({required DocumentHandle handle}) {
+  Future<String> crateApiExportExportText({
+    required DocumentHandle handle,
+    required PaperSize paper,
+  }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -477,6 +485,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             handle,
             serializer,
           );
+          sse_encode_paper_size(paper, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -489,14 +498,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_String,
         ),
         constMeta: kCrateApiExportExportTextConstMeta,
-        argValues: [handle],
+        argValues: [handle, paper],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiExportExportTextConstMeta =>
-      const TaskConstMeta(debugName: "export_text", argNames: ["handle"]);
+  TaskConstMeta get kCrateApiExportExportTextConstMeta => const TaskConstMeta(
+    debugName: "export_text",
+    argNames: ["handle", "paper"],
+  );
 
   @override
   Future<String> crateApiImportImportFdx({required String xml}) {
@@ -556,6 +567,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Future<List<PageSnapshot>> crateApiDocumentPaginate({
     required DocumentHandle handle,
+    required PaperSize paper,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -565,6 +577,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             handle,
             serializer,
           );
+          sse_encode_paper_size(paper, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -577,14 +590,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_String,
         ),
         constMeta: kCrateApiDocumentPaginateConstMeta,
-        argValues: [handle],
+        argValues: [handle, paper],
         apiImpl: this,
       ),
     );
   }
 
   TaskConstMeta get kCrateApiDocumentPaginateConstMeta =>
-      const TaskConstMeta(debugName: "paginate", argNames: ["handle"]);
+      const TaskConstMeta(debugName: "paginate", argNames: ["handle", "paper"]);
 
   @override
   int crateApiDocumentWordCount({required DocumentHandle handle}) {
@@ -867,9 +880,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PageSettings dco_decode_page_settings(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 1)
-      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
-    return PageSettings(minutesPerPage: dco_decode_f_32(arr[0]));
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return PageSettings(
+      minutesPerPage: dco_decode_f_32(arr[0]),
+      paper: dco_decode_paper_size(arr[1]),
+    );
   }
 
   @protected
@@ -887,18 +903,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PaperSize dco_decode_paper_size(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return PaperSize.values[raw as int];
+  }
+
+  @protected
   PdfSettings dco_decode_pdf_settings(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return PdfSettings(
       titlePage: dco_decode_bool(arr[0]),
       pageNumbers: dco_decode_bool(arr[1]),
       notesPage: dco_decode_bool(arr[2]),
-      notesTitle: dco_decode_String(arr[3]),
-      notesBeforeFirstScene: dco_decode_String(arr[4]),
-      watermark: dco_decode_String(arr[5]),
+      paper: dco_decode_paper_size(arr[3]),
+      notesTitle: dco_decode_String(arr[4]),
+      notesBeforeFirstScene: dco_decode_String(arr[5]),
+      watermark: dco_decode_String(arr[6]),
     );
   }
 
@@ -1272,7 +1295,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PageSettings sse_decode_page_settings(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_minutesPerPage = sse_decode_f_32(deserializer);
-    return PageSettings(minutesPerPage: var_minutesPerPage);
+    var var_paper = sse_decode_paper_size(deserializer);
+    return PageSettings(minutesPerPage: var_minutesPerPage, paper: var_paper);
   }
 
   @protected
@@ -1291,11 +1315,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PaperSize sse_decode_paper_size(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return PaperSize.values[inner];
+  }
+
+  @protected
   PdfSettings sse_decode_pdf_settings(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_titlePage = sse_decode_bool(deserializer);
     var var_pageNumbers = sse_decode_bool(deserializer);
     var var_notesPage = sse_decode_bool(deserializer);
+    var var_paper = sse_decode_paper_size(deserializer);
     var var_notesTitle = sse_decode_String(deserializer);
     var var_notesBeforeFirstScene = sse_decode_String(deserializer);
     var var_watermark = sse_decode_String(deserializer);
@@ -1303,6 +1335,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       titlePage: var_titlePage,
       pageNumbers: var_pageNumbers,
       notesPage: var_notesPage,
+      paper: var_paper,
       notesTitle: var_notesTitle,
       notesBeforeFirstScene: var_notesBeforeFirstScene,
       watermark: var_watermark,
@@ -1651,6 +1684,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_page_settings(PageSettings self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_f_32(self.minutesPerPage, serializer);
+    sse_encode_paper_size(self.paper, serializer);
   }
 
   @protected
@@ -1663,11 +1697,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_paper_size(PaperSize self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_pdf_settings(PdfSettings self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_bool(self.titlePage, serializer);
     sse_encode_bool(self.pageNumbers, serializer);
     sse_encode_bool(self.notesPage, serializer);
+    sse_encode_paper_size(self.paper, serializer);
     sse_encode_String(self.notesTitle, serializer);
     sse_encode_String(self.notesBeforeFirstScene, serializer);
     sse_encode_String(self.watermark, serializer);

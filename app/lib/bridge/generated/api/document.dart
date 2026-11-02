@@ -5,6 +5,7 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'paper.dart';
 
 // These functions are ignored because they are not marked as `pub`: `current`, `element_snapshot`, `element_type`, `snapshot`
 
@@ -40,8 +41,11 @@ Future<DocumentStats> documentStats({
   settings: settings,
 );
 
-Future<List<PageSnapshot>> paginate({required DocumentHandle handle}) =>
-    RustLib.instance.api.crateApiDocumentPaginate(handle: handle);
+Future<List<PageSnapshot>> paginate({
+  required DocumentHandle handle,
+  required PaperSize paper,
+}) =>
+    RustLib.instance.api.crateApiDocumentPaginate(handle: handle, paper: paper);
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<DocumentHandle>>
 abstract class DocumentHandle implements RustOpaqueInterface {}
@@ -223,18 +227,20 @@ class OutlineEntry {
 
 class PageSettings {
   final double minutesPerPage;
+  final PaperSize paper;
 
-  const PageSettings({required this.minutesPerPage});
+  const PageSettings({required this.minutesPerPage, required this.paper});
 
   @override
-  int get hashCode => minutesPerPage.hashCode;
+  int get hashCode => minutesPerPage.hashCode ^ paper.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is PageSettings &&
           runtimeType == other.runtimeType &&
-          minutesPerPage == other.minutesPerPage;
+          minutesPerPage == other.minutesPerPage &&
+          paper == other.paper;
 }
 
 class PageSnapshot {

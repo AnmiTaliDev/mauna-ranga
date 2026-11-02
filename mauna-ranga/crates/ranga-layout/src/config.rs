@@ -110,6 +110,27 @@ impl Default for PageConfig {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum PaperSize {
+    #[default]
+    UsLetter,
+    A4,
+}
+
+impl PageConfig {
+    pub fn for_paper(paper: PaperSize) -> Self {
+        match paper {
+            PaperSize::UsLetter => PageConfig::default(),
+            PaperSize::A4 => PageConfig {
+                page_width: 8.27,
+                page_height: 11.69,
+                bottom_margin: 1.69,
+                ..PageConfig::default()
+            },
+        }
+    }
+}
+
 impl PageConfig {
     pub fn lines_per_page(&self) -> u32 {
         ((self.page_height - self.top_margin - self.bottom_margin) * self.lines_per_inch).floor()

@@ -4,6 +4,8 @@ use flutter_rust_bridge::frb;
 use ranga_core::{Document, Element, ElementKind, InlineKind, OutlineKind, parse_full};
 use ranga_layout::{PageConfig, estimated_runtime_minutes, paginate as layout_pages};
 
+use crate::api::paper::PaperSize;
+
 use crate::utf16::{Cursor, byte_offset, units};
 
 #[frb(opaque)]
@@ -89,6 +91,7 @@ pub struct NoteItem {
 
 pub struct PageSettings {
     pub minutes_per_page: f32,
+    pub paper: PaperSize,
 }
 
 pub struct DocumentStats {
@@ -203,7 +206,7 @@ pub async fn document_stats(
     settings: PageSettings,
 ) -> Result<DocumentStats, String> {
     let document = handle.current()?;
-    let config = PageConfig::default();
+    let config = PageConfig::for_paper(settings.paper.into());
     let pages = layout_pages(&document, &config);
     Ok(DocumentStats {
         words: document.word_count(),
@@ -212,17 +215,22 @@ pub async fn document_stats(
     })
 }
 
-pub async fn paginate(handle: &DocumentHandle) -> Result<Vec<PageSnapshot>, String> {
+pub async fn paginate(
+    handle: &DocumentHandle,
+    paper: PaperSize,
+) -> Result<Vec<PageSnapshot>, String> {
     let document = handle.current()?;
-    Ok(layout_pages(&document, &PageConfig::default())
-        .into_iter()
-        .map(|page| PageSnapshot {
-            number: page.number,
-            first_element: page.elements.start as u32,
-            end_element: page.elements.end as u32,
-            lines: page.lines.len() as u32,
-        })
-        .collect())
+    Ok(
+        layout_pages(&document, &PageConfig::for_paper(paper.into()))
+            .into_iter()
+            .map(|page| PageSnapshot {
+                number: page.number,
+                first_element: page.elements.start as u32,
+                end_element: page.elements.end as u32,
+                lines: page.lines.len() as u32,
+            })
+            .collect(),
+    )
 }
 
 fn snapshot(

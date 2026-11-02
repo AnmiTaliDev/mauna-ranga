@@ -2,42 +2,46 @@ import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 enum ThemePreset {
-  paper('Paper'),
-  sepia('Sepia'),
-  ink('Ink'),
-  midnight('Midnight');
-
-  const ThemePreset(this.label);
-
-  final String label;
+  paper,
+  sepia,
+  ink,
+  midnight;
 
   bool get isLight => this == ThemePreset.paper || this == ThemePreset.sepia;
 }
 
 enum AccentChoice {
-  steelBlue('Steel blue', MaunaAccents.steelBlue),
-  graphite('Graphite', MaunaAccents.graphite),
-  coolTeal('Cool teal', MaunaAccents.coolTeal),
-  indigo('Indigo', MaunaAccents.indigo);
+  steelBlue(MaunaAccents.steelBlue),
+  graphite(MaunaAccents.graphite),
+  coolTeal(MaunaAccents.coolTeal),
+  indigo(MaunaAccents.indigo);
 
-  const AccentChoice(this.label, this.value);
-
-  final String label;
+  const AccentChoice(this.value);
 
   final MaunaAccent value;
 }
 
 enum DocumentFont {
-  courierPrime('Courier Prime', 'CourierPrime', 'Latin only'),
-  jetBrainsMono('JetBrains Mono', 'JetBrainsMono', 'Latin and Cyrillic');
+  courierPrime('Courier Prime', 'CourierPrime', false),
+  jetBrainsMono('JetBrains Mono', 'JetBrainsMono', true);
 
-  const DocumentFont(this.family, this.filePrefix, this.coverage);
+  const DocumentFont(this.family, this.filePrefix, this.hasCyrillic);
 
   final String family;
 
   final String filePrefix;
 
-  final String coverage;
+  final bool hasCyrillic;
+}
+
+enum AppLanguage {
+  system(null),
+  english(Locale('en')),
+  russian(Locale('ru'));
+
+  const AppLanguage(this.locale);
+
+  final Locale? locale;
 }
 
 const int recentFilesLimit = 10;
@@ -53,6 +57,7 @@ class AppSettings {
     this.pdfTitlePage = true,
     this.pdfPageNumbers = true,
     this.pdfNotesPage = false,
+    this.language = AppLanguage.system,
     this.pdfWatermark = '',
   });
 
@@ -69,6 +74,11 @@ class AppSettings {
       preset: _byName(ThemePreset.values, json['theme'], defaults.preset),
       accent: _byName(AccentChoice.values, json['accent'], defaults.accent),
       font: _byName(DocumentFont.values, json['font'], defaults.font),
+      language: _byName(
+        AppLanguage.values,
+        json['language'],
+        defaults.language,
+      ),
       dimWhileTyping: dim is bool ? dim : defaults.dimWhileTyping,
       minutesPerPage: minutes is num && minutes > 0
           ? minutes.toDouble()
@@ -103,6 +113,8 @@ class AppSettings {
 
   final bool pdfNotesPage;
 
+  final AppLanguage language;
+
   final String pdfWatermark;
 
   AppSettings copyWith({
@@ -115,6 +127,7 @@ class AppSettings {
     bool? pdfTitlePage,
     bool? pdfPageNumbers,
     bool? pdfNotesPage,
+    AppLanguage? language,
     String? pdfWatermark,
   }) {
     return AppSettings(
@@ -127,6 +140,7 @@ class AppSettings {
       pdfTitlePage: pdfTitlePage ?? this.pdfTitlePage,
       pdfPageNumbers: pdfPageNumbers ?? this.pdfPageNumbers,
       pdfNotesPage: pdfNotesPage ?? this.pdfNotesPage,
+      language: language ?? this.language,
       pdfWatermark: pdfWatermark ?? this.pdfWatermark,
     );
   }
@@ -157,6 +171,7 @@ class AppSettings {
       'pdfTitlePage': pdfTitlePage,
       'pdfPageNumbers': pdfPageNumbers,
       'pdfNotesPage': pdfNotesPage,
+      'language': language.name,
       'pdfWatermark': pdfWatermark,
     };
   }

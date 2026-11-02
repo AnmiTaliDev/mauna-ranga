@@ -1,6 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
+import '../l10n/app_localizations.dart';
+import '../l10n/labels.dart';
+import '../widgets/app_dialog.dart';
 import '../widgets/dialog_text_field.dart';
 import 'app_settings.dart';
 
@@ -11,14 +14,19 @@ const List<double> minutesPerPageChoices = <double>[0.75, 1.0, 1.25, 1.5];
 const String fontSample = 'INT. HOUSE - DAY';
 
 enum _Section {
-  appearance('Appearance'),
-  document('Document'),
-  editor('Editor'),
-  about('About');
+  appearance,
+  document,
+  editor,
+  about;
 
-  const _Section(this.label);
-
-  final String label;
+  String label(AppLocalizations l10n) {
+    return switch (this) {
+      _Section.appearance => l10n.settingsAppearance,
+      _Section.document => l10n.settingsDocument,
+      _Section.editor => l10n.settingsEditor,
+      _Section.about => l10n.settingsAbout,
+    };
+  }
 }
 
 class SettingsDialog extends StatefulWidget {
@@ -61,8 +69,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
-    return MaunaDialog(
-      title: 'Settings',
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AppDialog(
+      title: l10n.settings,
       child: SizedBox(
         height: settingsBodyHeight,
         child: Row(
@@ -71,7 +80,8 @@ class _SettingsDialogState extends State<SettingsDialog> {
             MaunaSidebar(
               width: settingsNavWidth,
               items: <String>[
-                for (final _Section section in _Section.values) section.label,
+                for (final _Section section in _Section.values)
+                  section.label(l10n),
               ],
               selectedIndex: _section.index,
               onSelected: (int index) =>
@@ -103,12 +113,13 @@ class _AppearancePanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: theme.spacing.lg,
       children: <Widget>[
         _Group(
-          label: 'Theme',
+          label: l10n.settingsTheme,
           child: _Grid(
             children: <Widget>[
               for (final ThemePreset preset in ThemePreset.values)
@@ -117,8 +128,8 @@ class _AppearancePanel extends StatelessWidget {
                   onTap: () => onChanged(settings.copyWith(preset: preset)),
                   builder: (bool strong) => _SwatchLabel(
                     color: settings.copyWith(preset: preset).theme().bgCanvas,
-                    label: preset.label,
-                    detail: preset.isLight ? 'Light' : 'Dark',
+                    label: preset.label(l10n),
+                    detail: preset.tone(l10n),
                     strong: strong,
                   ),
                 ),
@@ -126,7 +137,7 @@ class _AppearancePanel extends StatelessWidget {
           ),
         ),
         _Group(
-          label: 'Accent color',
+          label: l10n.settingsAccent,
           child: _Grid(
             children: <Widget>[
               for (final AccentChoice accent in AccentChoice.values)
@@ -139,7 +150,7 @@ class _AppearancePanel extends StatelessWidget {
                         : accent.value.dark;
                     return _SwatchLabel(
                       color: color,
-                      label: accent.label,
+                      label: accent.label(l10n),
                       detail: _hex(color),
                       strong: strong,
                     );
@@ -163,13 +174,14 @@ class _DocumentPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: theme.spacing.lg,
       children: <Widget>[
         _Group(
-          label: 'Font',
-          description: 'Used in the editor and in PDF export.',
+          label: l10n.settingsFont,
+          description: l10n.settingsFontDescription,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: theme.spacing.xs,
@@ -191,7 +203,7 @@ class _DocumentPanel extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '${font.family} · ${font.coverage}',
+                        '${font.family} · ${font.coverage(l10n)}',
                         style: theme.captionStyle,
                       ),
                     ],
@@ -201,8 +213,8 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
-          label: 'PDF title page',
-          description: 'Print the title page as the first page.',
+          label: l10n.settingsPdfTitlePage,
+          description: l10n.settingsPdfTitlePageDescription,
           child: _OnOff(
             value: settings.pdfTitlePage,
             onChanged: (bool value) =>
@@ -210,8 +222,8 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
-          label: 'PDF page numbers',
-          description: 'Print the page number on every page except the first.',
+          label: l10n.settingsPdfPageNumbers,
+          description: l10n.settingsPdfPageNumbersDescription,
           child: _OnOff(
             value: settings.pdfPageNumbers,
             onChanged: (bool value) =>
@@ -219,8 +231,8 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
-          label: 'PDF notes page',
-          description: 'Add a last page that lists the notes of the document.',
+          label: l10n.settingsPdfNotesPage,
+          description: l10n.settingsPdfNotesPageDescription,
           child: _OnOff(
             value: settings.pdfNotesPage,
             onChanged: (bool value) =>
@@ -228,8 +240,8 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
-          label: 'PDF watermark',
-          description: 'Diagonal text on every page. Leave empty for none.',
+          label: l10n.settingsPdfWatermark,
+          description: l10n.settingsPdfWatermarkDescription,
           child: _WatermarkField(
             text: settings.pdfWatermark,
             onChanged: (String value) =>
@@ -237,8 +249,8 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
-          label: 'Runtime estimate',
-          description: 'Screen minutes per page.',
+          label: l10n.settingsRuntime,
+          description: l10n.settingsRuntimeDescription,
           child: _Grid(
             columns: minutesPerPageChoices.length,
             children: <Widget>[
@@ -248,7 +260,7 @@ class _DocumentPanel extends StatelessWidget {
                   onTap: () =>
                       onChanged(settings.copyWith(minutesPerPage: minutes)),
                   builder: (bool strong) => _CenteredLabel(
-                    label: _minutes(minutes),
+                    label: l10n.minutesValue(minutes),
                     strong: strong,
                     selected: settings.minutesPerPage == minutes,
                   ),
@@ -270,6 +282,7 @@ class _OnOff extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return _Grid(
       children: <Widget>[
         for (final bool choice in <bool>[true, false])
@@ -277,7 +290,7 @@ class _OnOff extends StatelessWidget {
             selected: value == choice,
             onTap: () => onChanged(choice),
             builder: (bool strong) => _CenteredLabel(
-              label: choice ? 'On' : 'Off',
+              label: choice ? l10n.on : l10n.off,
               strong: strong,
               selected: value == choice,
             ),
@@ -316,7 +329,7 @@ class _WatermarkFieldState extends State<_WatermarkField> {
     return DialogTextField(
       controller: _controller,
       focusNode: _focusNode,
-      placeholder: 'No watermark',
+      placeholder: AppLocalizations.of(context).watermarkPlaceholder,
       onChanged: widget.onChanged,
     );
   }
@@ -331,24 +344,51 @@ class _EditorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Group(
-      label: 'Dim panels while typing',
-      description:
-          'Toolbar, sidebar and status bar lose contrast while you type and return when the pointer moves.',
-      child: _Grid(
-        children: <Widget>[
-          for (final bool value in <bool>[true, false])
-            _ChoiceTile(
-              selected: settings.dimWhileTyping == value,
-              onTap: () => onChanged(settings.copyWith(dimWhileTyping: value)),
-              builder: (bool strong) => _CenteredLabel(
-                label: value ? 'On' : 'Off',
-                strong: strong,
-                selected: settings.dimWhileTyping == value,
-              ),
-            ),
-        ],
-      ),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    final MaunaThemeData theme = MaunaThemeData.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: theme.spacing.lg,
+      children: <Widget>[
+        _Group(
+          label: l10n.settingsLanguage,
+          description: l10n.settingsLanguageDescription,
+          child: _Grid(
+            columns: AppLanguage.values.length,
+            children: <Widget>[
+              for (final AppLanguage language in AppLanguage.values)
+                _ChoiceTile(
+                  selected: settings.language == language,
+                  onTap: () => onChanged(settings.copyWith(language: language)),
+                  builder: (bool strong) => _CenteredLabel(
+                    label: language.label(l10n),
+                    strong: strong,
+                    selected: settings.language == language,
+                  ),
+                ),
+            ],
+          ),
+        ),
+        _Group(
+          label: l10n.settingsDim,
+          description: l10n.settingsDimDescription,
+          child: _Grid(
+            children: <Widget>[
+              for (final bool value in <bool>[true, false])
+                _ChoiceTile(
+                  selected: settings.dimWhileTyping == value,
+                  onTap: () =>
+                      onChanged(settings.copyWith(dimWhileTyping: value)),
+                  builder: (bool strong) => _CenteredLabel(
+                    label: value ? l10n.on : l10n.off,
+                    strong: strong,
+                    selected: settings.dimWhileTyping == value,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -359,27 +399,22 @@ class _AboutPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: theme.spacing.lg,
       children: <Widget>[
         _Group(
-          label: 'Mauna Ranga',
-          child: Text(
-            'Version 0.1.0. Fountain screenplay editor.',
-            style: theme.uiStyle,
-          ),
+          label: l10n.appTitle,
+          child: Text(l10n.aboutDescription, style: theme.uiStyle),
         ),
         _Group(
-          label: 'Components',
-          child: Text(
-            'Mauna Ranga engine, mauna design system, Courier Prime, JetBrains Mono, Inter.',
-            style: theme.uiStyle,
-          ),
+          label: l10n.aboutComponents,
+          child: Text(l10n.aboutComponentsText, style: theme.uiStyle),
         ),
         _Group(
-          label: 'License',
-          child: Text('Apache License 2.0.', style: theme.uiStyle),
+          label: l10n.aboutLicense,
+          child: Text(l10n.aboutLicenseText, style: theme.uiStyle),
         ),
       ],
     );
@@ -595,11 +630,4 @@ class _ChoiceTileState extends State<_ChoiceTile> {
 String _hex(Color color) {
   final int rgb = color.toARGB32() & 0xFFFFFF;
   return '#${rgb.toRadixString(16).padLeft(6, '0').toUpperCase()}';
-}
-
-String _minutes(double minutes) {
-  final String value = minutes == minutes.roundToDouble()
-      ? minutes.toStringAsFixed(0)
-      : minutes.toString();
-  return '$value min';
 }

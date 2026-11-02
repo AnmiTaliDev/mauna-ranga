@@ -1,0 +1,203 @@
+{
+  "@@locale": "en",
+  "appTitle": "Mauna Ranga",
+  "untitledFileName": "Untitled.fountain",
+  "close": "Close",
+  "closeMenu": "Close menu",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saveAs": "Save as",
+  "discard": "Discard",
+  "restore": "Restore",
+  "open": "Open",
+  "openRecent": "Open {name}",
+  "@openRecent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "settings": "Settings",
+  "menuFile": "File",
+  "menuView": "View",
+  "menuCommands": "Commands",
+  "sidebarHide": "Hide sidebar",
+  "sidebarShow": "Show sidebar",
+  "focusModeEnter": "Enter focus mode",
+  "focusModeExit": "Exit focus mode",
+  "findAndReplace": "Find and replace",
+  "statistics": "Statistics",
+  "notes": "Notes",
+  "moveSceneUp": "Move scene up",
+  "moveSceneDown": "Move scene down",
+  "importFdx": "Import FDX",
+  "exportPdf": "Export to PDF",
+  "exportFdx": "Export to FDX",
+  "exportHtml": "Export to HTML",
+  "exportText": "Export to text",
+  "commandOpenFile": "Open file",
+  "commandOpenSettings": "Open settings",
+  "commandShowStatistics": "Show statistics",
+  "commandShowNotes": "Show notes",
+  "commandUseTheme": "Use {theme} theme",
+  "@commandUseTheme": {
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
+  "commandUseFont": "Use {font} font",
+  "@commandUseFont": {
+    "placeholders": {
+      "font": {
+        "type": "String"
+      }
+    }
+  },
+  "commandGoTo": "Go to {title}",
+  "@commandGoTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "paletteHint": "Enter a command",
+  "paletteEmpty": "No matching commands",
+  "statusWords": "Words: {count}",
+  "@statusWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusPages": "Pages: {count}",
+  "@statusPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statusRuntime": "Runtime: {minutes} min",
+  "@statusRuntime": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "sidebarTitle": "Scenes",
+  "documentPlaceholder": "Start writing",
+  "errorRestore": "Cannot restore the document",
+  "errorImport": "Cannot import the file",
+  "errorOpen": "Cannot open the file",
+  "errorSave": "Cannot save the file",
+  "errorExportPdf": "Cannot export to PDF",
+  "errorExportFdx": "Cannot export to FDX",
+  "errorExportHtml": "Cannot export to HTML",
+  "errorExportText": "Cannot export to text",
+  "restoreTitle": "Restore unsaved changes",
+  "restoreUntitled": "An unsaved document from the previous session was found.",
+  "restoreFile": "Unsaved changes to {name} from the previous session were found.",
+  "@restoreFile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "unsavedTitle": "Unsaved changes",
+  "unsavedMessage": "Save changes to {name} before closing?",
+  "@unsavedMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "findPlaceholder": "Find",
+  "replacePlaceholder": "Replace with",
+  "findNext": "Find next",
+  "replace": "Replace",
+  "replaceAll": "Replace all",
+  "wholeWordOn": "Whole word: on",
+  "wholeWordOff": "Whole word: off",
+  "noMatches": "No matches",
+  "replacedCount": "Replaced {count}",
+  "@replacedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "statsEmpty": "No characters",
+  "statsCharacter": "Character",
+  "statsSpeeches": "Speeches",
+  "statsWords": "Words",
+  "notesEmpty": "No notes",
+  "notesBeforeFirstScene": "Before the first scene",
+  "notesPageTitle": "NOTES",
+  "windowMinimize": "Minimize",
+  "windowMaximize": "Maximize",
+  "windowClose": "Close window",
+  "settingsAppearance": "Appearance",
+  "settingsDocument": "Document",
+  "settingsEditor": "Editor",
+  "settingsAbout": "About",
+  "settingsTheme": "Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themePaper": "Paper",
+  "themeSepia": "Sepia",
+  "themeInk": "Ink",
+  "themeMidnight": "Midnight",
+  "settingsAccent": "Accent color",
+  "accentSteelBlue": "Steel blue",
+  "accentGraphite": "Graphite",
+  "accentCoolTeal": "Cool teal",
+  "accentIndigo": "Indigo",
+  "settingsLanguage": "Language",
+  "settingsLanguageDescription": "Interface language.",
+  "languageSystem": "System",
+  "languageEnglish": "English",
+  "languageRussian": "Русский",
+  "settingsFont": "Font",
+  "settingsFontDescription": "Used in the editor and in PDF export.",
+  "fontCoverageLatin": "Latin only",
+  "fontCoverageCyrillic": "Latin and Cyrillic",
+  "settingsPdfTitlePage": "PDF title page",
+  "settingsPdfTitlePageDescription": "Print the title page as the first page.",
+  "settingsPdfPageNumbers": "PDF page numbers",
+  "settingsPdfPageNumbersDescription": "Print the page number on every page except the first.",
+  "settingsPdfNotesPage": "PDF notes page",
+  "settingsPdfNotesPageDescription": "Add a last page that lists the notes of the document.",
+  "settingsPdfWatermark": "PDF watermark",
+  "settingsPdfWatermarkDescription": "Diagonal text on every page. Leave empty for none.",
+  "watermarkPlaceholder": "No watermark",
+  "settingsRuntime": "Runtime estimate",
+  "settingsRuntimeDescription": "Screen minutes per page.",
+  "minutesValue": "{value} min",
+  "@minutesValue": {
+    "placeholders": {
+      "value": {
+        "type": "double",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "on": "On",
+  "off": "Off",
+  "settingsDim": "Dim panels while typing",
+  "settingsDimDescription": "Toolbar, sidebar and status bar lose contrast while you type and return when the pointer moves.",
+  "aboutDescription": "Version 0.1.0. Fountain screenplay editor.",
+  "aboutComponents": "Components",
+  "aboutComponentsText": "Mauna Ranga engine, mauna design system, Courier Prime, JetBrains Mono, Inter.",
+  "aboutLicense": "License",
+  "aboutLicenseText": "Apache License 2.0.",
+  "showToolbar": "Show toolbar"
+}

@@ -46,11 +46,10 @@ The word count lives in `ranga-core`, because each element keeps its own count a
 
 ## Layout
 
-Scene numbers written as `#n#` are printed on both sides of the heading. Column indents are the `ParagraphSpec` values of the Final Draft template in the sample `.fdx` files from fountain.io. Page size (US Letter), 1 inch top and bottom margins, 10 characters and 6 lines per inch are the common screenplay values and can be changed in `PageConfig`. One page is counted as one minute by default. The value is a parameter of `estimated_runtime_minutes`.
+Scene numbers written as `#n#` are printed on both sides of the heading. A dual dialogue pair (a character with `^` and the dialogue right before it) is laid out in two columns and is not split across pages unless it is taller than a page. Column indents are the `ParagraphSpec` values of the Final Draft template in the sample `.fdx` files from fountain.io. Page size (US Letter), 1 inch top and bottom margins, 10 characters and 6 lines per inch are the common screenplay values and can be changed in `PageConfig`. One page is counted as one minute by default. The value is a parameter of `estimated_runtime_minutes`.
 
 Known limitations:
 
-- Dual dialogue is laid out as two consecutive blocks, not side by side.
 - Action and dialogue break at line boundaries with at least two lines on each side, not at sentence boundaries.
 - A dialogue block that continues on the next page gets `(MORE)` and `CHARACTER (CONT'D)`. Dialogue longer than one page is split several times.
 

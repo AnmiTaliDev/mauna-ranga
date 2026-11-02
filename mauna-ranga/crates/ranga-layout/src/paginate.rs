@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use ranga_core::{Document, Element, ElementKind, Run};
 
-use crate::config::{Column, PageConfig};
+use crate::config::{Column, DualColumns, PageConfig};
 use crate::wrap::{WrapOptions, wrap};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -41,6 +41,13 @@ enum BlockKind {
     Split,
     Heading,
     Dialogue { header: usize, continued: Vec<Run> },
+    Dual { right: Vec<Line> },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Side {
+    Left,
+    Right,
 }
 
 struct Block {
@@ -48,6 +55,7 @@ struct Block {
     space: u32,
     lines: Vec<Line>,
     page_break_before: bool,
+    dual: Option<Side>,
 }
 
 pub fn paginate(doc: &Document, config: &PageConfig) -> Vec<Page> {
@@ -73,8 +81,10 @@ pub fn paginate(doc: &Document, config: &PageConfig) -> Vec<Page> {
 
 fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
     let source = doc.source();
+    let sides = dual_sides(doc);
     let mut blocks: Vec<Block> = Vec::new();
     let mut in_dialogue = false;
+    let mut side = None;
     let mut page_break = false;
     for (index, element) in doc.elements().iter().enumerate() {
         let kind = &element.kind;
@@ -94,10 +104,11 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
             && dialogue_part
             && let Some(block) = blocks.last_mut()
         {
-            let column = if *kind == ElementKind::Parenthetical {
-                config.parenthetical
-            } else {
-                config.dialogue
+            let column = match (side, *kind == ElementKind::Parenthetical) {
+                (Some(side), true) => dual_columns(side, config).parenthetical,
+                (Some(side), false) => dual_columns(side, config).dialogue,
+                (None, true) => config.parenthetical,
+                (None, false) => config.dialogue,
             };
             block.lines.extend(lay_out(
                 source,
@@ -111,13 +122,17 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
             continue;
         }
         in_dialogue = matches!(kind, ElementKind::Character { .. });
+        side = sides[index];
         let block = match kind {
             ElementKind::Character { extension, .. } => {
+                let character = side.map_or(config.character, |side| {
+                    dual_columns(side, config).character
+                });
                 let lines = lay_out(
                     source,
                     element,
                     index,
-                    config.character,
+                    character,
                     Align::Left,
                     false,
                     config,
@@ -131,6 +146,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     space: config.element_space,
                     lines,
                     page_break_before: false,
+                    dual: side,
                 }
             }
             ElementKind::SceneHeading { .. } => Block {
@@ -146,6 +162,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     config,
                 ),
                 page_break_before: false,
+                dual: None,
             },
             ElementKind::Transition => Block {
                 kind: BlockKind::Fixed,
@@ -160,6 +177,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     config,
                 ),
                 page_break_before: false,
+                dual: None,
             },
             ElementKind::Centered => Block {
                 kind: BlockKind::Split,
@@ -174,6 +192,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     config,
                 ),
                 page_break_before: false,
+                dual: None,
             },
             ElementKind::Parenthetical => Block {
                 kind: BlockKind::Split,
@@ -188,6 +207,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     config,
                 ),
                 page_break_before: false,
+                dual: None,
             },
             ElementKind::Dialogue => Block {
                 kind: BlockKind::Split,
@@ -202,6 +222,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     config,
                 ),
                 page_break_before: false,
+                dual: None,
             },
             _ => Block {
                 kind: BlockKind::Split,
@@ -216,6 +237,7 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
                     config,
                 ),
                 page_break_before: false,
+                dual: None,
             },
         };
         blocks.push(Block {
@@ -223,7 +245,60 @@ fn build_blocks(doc: &Document, config: &PageConfig) -> Vec<Block> {
             ..block
         });
     }
-    blocks
+    join_dual(blocks)
+}
+
+fn join_dual(blocks: Vec<Block>) -> Vec<Block> {
+    let mut joined: Vec<Block> = Vec::new();
+    for block in blocks {
+        if block.dual == Some(Side::Right) {
+            let left = joined.pop().expect("left half precedes right half");
+            joined.push(Block {
+                kind: BlockKind::Dual { right: block.lines },
+                space: left.space,
+                lines: left.lines,
+                page_break_before: left.page_break_before,
+                dual: None,
+            });
+        } else {
+            joined.push(block);
+        }
+    }
+    joined
+}
+
+fn dual_sides(doc: &Document) -> Vec<Option<Side>> {
+    let elements = doc.elements();
+    let mut sides: Vec<Option<Side>> = vec![None; elements.len()];
+    let mut last_character: Option<usize> = None;
+    let mut only_dialogue_since = false;
+    for (index, element) in elements.iter().enumerate() {
+        match &element.kind {
+            ElementKind::Character { dual, .. } => {
+                if *dual
+                    && only_dialogue_since
+                    && let Some(left) = last_character
+                    && sides[left].is_none()
+                {
+                    sides[left] = Some(Side::Left);
+                    sides[index] = Some(Side::Right);
+                }
+                last_character = Some(index);
+                only_dialogue_since = true;
+            }
+            ElementKind::Parenthetical | ElementKind::Dialogue | ElementKind::Lyric => {}
+            kind if !kind.is_printed() => {}
+            _ => only_dialogue_since = false,
+        }
+    }
+    sides
+}
+
+fn dual_columns(side: Side, config: &PageConfig) -> DualColumns {
+    match side {
+        Side::Left => config.dual_left,
+        Side::Right => config.dual_right,
+    }
 }
 
 fn lay_out(
@@ -298,6 +373,11 @@ impl Pager {
         if self.row >= self.capacity && !self.is_empty() {
             self.finish_page();
         }
+        self.push(line);
+        self.row += 1;
+    }
+
+    fn push(&mut self, line: &Line) {
         self.lines.push(PageLine {
             row: self.row,
             column: line.column,
@@ -305,7 +385,23 @@ impl Pager {
             runs: line.runs.clone(),
             element: line.element,
         });
-        self.row += 1;
+    }
+
+    fn place_dual(&mut self, block: &Block, right: &[Line]) {
+        let height = block.lines.len().max(right.len());
+        if self.space_for(block) + height as u32 > self.remaining() {
+            self.finish_page();
+        }
+        self.skip(block.space);
+        for index in 0..height {
+            if self.row >= self.capacity && !self.is_empty() {
+                self.finish_page();
+            }
+            for line in block.lines.get(index).into_iter().chain(right.get(index)) {
+                self.push(line);
+            }
+            self.row += 1;
+        }
     }
 
     fn finish_page(&mut self) {
@@ -345,6 +441,7 @@ impl Pager {
                 }
             }
             BlockKind::Split => self.place_split(block),
+            BlockKind::Dual { right } => self.place_dual(block, right),
             BlockKind::Dialogue { header, continued } => {
                 self.place_dialogue(block, *header, continued, config)
             }

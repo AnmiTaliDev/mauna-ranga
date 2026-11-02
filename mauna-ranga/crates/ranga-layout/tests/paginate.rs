@@ -110,3 +110,50 @@ fn runtime_uses_minutes_per_page() {
     assert!((runtime - length * 1.5).abs() < f32::EPSILON);
     assert_eq!(estimated_runtime_minutes(&[], &config, 1.0), 0.0);
 }
+
+#[test]
+fn dual_dialogue_is_laid_out_side_by_side() {
+    let doc = parse_full(
+        "STEEL\n(beer raised)\nTo retirement.\n\nBRICK ^\nTo retirement, and to everything after it.\n\nShe waits.\n",
+    );
+    let config = PageConfig::default();
+    let pages = paginate(&doc, &config);
+    assert_eq!(pages.len(), 1);
+    let lines = &pages[0].lines;
+    let find = |name: &str| {
+        lines
+            .iter()
+            .find(|l| text(&l.runs) == name)
+            .expect("line")
+            .clone()
+    };
+    let steel = find("STEEL");
+    let brick = find("BRICK");
+    assert_eq!(steel.row, 0);
+    assert_eq!(brick.row, 0);
+    assert_eq!(steel.column, config.dual_left.character);
+    assert_eq!(brick.column, config.dual_right.character);
+    assert_eq!(find("(beer raised)").column, config.dual_left.parenthetical);
+    let right_rows: Vec<u32> = lines
+        .iter()
+        .filter(|l| l.column == config.dual_right.dialogue)
+        .map(|l| l.row)
+        .collect();
+    assert_eq!(right_rows[0], 1);
+    let action = find("She waits.");
+    assert_eq!(action.column, config.action);
+    assert!(action.row > *right_rows.last().expect("row"));
+}
+
+#[test]
+fn caret_without_preceding_dialogue_stays_in_one_column() {
+    let doc = parse_full("She waits.\n\nBRICK ^\nTo retirement.\n");
+    let config = PageConfig::default();
+    let pages = paginate(&doc, &config);
+    let brick = pages[0]
+        .lines
+        .iter()
+        .find(|l| text(&l.runs) == "BRICK")
+        .expect("line");
+    assert_eq!(brick.column, config.character);
+}

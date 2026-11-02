@@ -4,12 +4,19 @@ pub struct Column {
     pub right: f32,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DualColumns {
+    pub character: Column,
+    pub parenthetical: Column,
+    pub dialogue: Column,
+}
+
 /// Page geometry in inches, measured from the left and top page edges.
 ///
 /// Column indents are the `ParagraphSpec` values of the Final Draft template used by the
 /// sample `.fdx` files published on fountain.io. Page size, margins and the 10 characters
 /// per inch / 6 lines per inch grid of 12 pt Courier follow the common US screenplay
-/// format. The top and bottom margins, the page number position and the scene number gap are assumptions, not
+/// format. The top and bottom margins, the page number position, the scene number gap and the dual dialogue columns are assumptions, not
 /// values taken from a normative source.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PageConfig {
@@ -27,6 +34,8 @@ pub struct PageConfig {
     pub parenthetical: Column,
     pub dialogue: Column,
     pub transition: Column,
+    pub dual_left: DualColumns,
+    pub dual_right: DualColumns,
     pub scene_heading_space: u32,
     pub element_space: u32,
     pub more_label: String,
@@ -64,6 +73,34 @@ impl Default for PageConfig {
             transition: Column {
                 left: 5.5,
                 right: 7.1,
+            },
+            dual_left: DualColumns {
+                character: Column {
+                    left: 2.5,
+                    right: 4.4,
+                },
+                parenthetical: Column {
+                    left: 1.9,
+                    right: 4.0,
+                },
+                dialogue: Column {
+                    left: 1.5,
+                    right: 4.4,
+                },
+            },
+            dual_right: DualColumns {
+                character: Column {
+                    left: 5.6,
+                    right: 7.5,
+                },
+                parenthetical: Column {
+                    left: 5.0,
+                    right: 7.1,
+                },
+                dialogue: Column {
+                    left: 4.6,
+                    right: 7.5,
+                },
             },
             scene_heading_space: 2,
             element_space: 1,

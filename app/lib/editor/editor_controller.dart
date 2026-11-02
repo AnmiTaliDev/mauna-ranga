@@ -127,6 +127,14 @@ class EditorController extends ChangeNotifier {
     return current;
   }
 
+  Future<void> exportHtml(String path) async {
+    await File(path).writeAsString(await bridge.exportHtml(handle: _handle!));
+  }
+
+  Future<void> exportText(String path) async {
+    await File(path).writeAsString(await bridge.exportText(handle: _handle!));
+  }
+
   List<CharacterStat> characterStats() {
     return documentCharacterStats(handle: _handle!);
   }

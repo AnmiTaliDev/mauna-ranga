@@ -30,6 +30,14 @@ const XTypeGroup fdxFiles = XTypeGroup(
   label: 'Final Draft',
   extensions: <String>['fdx'],
 );
+const XTypeGroup htmlFiles = XTypeGroup(
+  label: 'HTML',
+  extensions: <String>['html'],
+);
+const XTypeGroup textFiles = XTypeGroup(
+  label: 'Text',
+  extensions: <String>['txt'],
+);
 const String untitledName = 'Untitled.fountain';
 
 class EditorScreen extends StatefulWidget {
@@ -280,6 +288,20 @@ class _EditorScreenState extends State<EditorScreen> {
     return KeyEventResult.ignored;
   }
 
+  Future<void> _exportHtml() async {
+    final String? path = await _saveLocation(htmlFiles, 'html');
+    if (path != null) {
+      await _run('Cannot export to HTML', () => _editor.exportHtml(path));
+    }
+  }
+
+  Future<void> _exportText() async {
+    final String? path = await _saveLocation(textFiles, 'txt');
+    if (path != null) {
+      await _run('Cannot export to text', () => _editor.exportText(path));
+    }
+  }
+
   void _toggleFocusMode() {
     _focus.toggleFocusMode();
     _documentFocus.requestFocus();
@@ -336,6 +358,8 @@ class _EditorScreenState extends State<EditorScreen> {
           saveAs: _saveAs,
           exportPdf: _exportPdf,
           exportFdx: _exportFdx,
+          exportHtml: _exportHtml,
+          exportText: _exportText,
           focusMode: _focus.focusMode,
           toggleFocusMode: _toggleFocusMode,
           sidebarOpen: _focus.sidebarOpen,
@@ -445,6 +469,8 @@ class _EditorScreenState extends State<EditorScreen> {
                             const MenuEntry.separator(),
                             MenuEntry('Export to PDF', _exportPdf),
                             MenuEntry('Export to FDX', _exportFdx),
+                            MenuEntry('Export to HTML', _exportHtml),
+                            MenuEntry('Export to text', _exportText),
                           ],
                         ),
                         ToolbarMenu(

@@ -16,6 +16,8 @@ List<MaunaCommand> editorCommands({
   required VoidCallback saveAs,
   required VoidCallback exportPdf,
   required VoidCallback exportFdx,
+  required VoidCallback exportHtml,
+  required VoidCallback exportText,
   required bool focusMode,
   required VoidCallback toggleFocusMode,
   required bool sidebarOpen,
@@ -30,6 +32,8 @@ List<MaunaCommand> editorCommands({
     MaunaCommand(label: 'Save as', onSelected: saveAs),
     MaunaCommand(label: 'Export to PDF', onSelected: exportPdf),
     MaunaCommand(label: 'Export to FDX', onSelected: exportFdx),
+    MaunaCommand(label: 'Export to HTML', onSelected: exportHtml),
+    MaunaCommand(label: 'Export to text', onSelected: exportText),
     MaunaCommand(
       label: focusMode ? 'Exit focus mode' : 'Enter focus mode',
       onSelected: toggleFocusMode,

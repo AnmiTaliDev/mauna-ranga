@@ -70,5 +70,21 @@ void main() {
     selector.path = '${dir.path}/script.pdf';
     await exportFromMenu(tester, 'Export to PDF');
     expect(File(selector.path).readAsBytesSync().take(5), '%PDF-'.codeUnits);
+
+    selector.path = '${dir.path}/script.html';
+    await exportFromMenu(tester, 'Export to HTML');
+    final String html = File(selector.path).readAsStringSync();
+    expect(html, contains('<!DOCTYPE html>'));
+    expect(
+      html,
+      contains('<h2 class="scene-heading">EXT. НОЧНАЯ УЛИЦА - НОЧЬ</h2>'),
+    );
+    expect(html, contains('<p class="character">МАКСИМ</p>'));
+
+    selector.path = '${dir.path}/script.txt';
+    await exportFromMenu(tester, 'Export to text');
+    final String text = File(selector.path).readAsStringSync();
+    expect(text, contains('               EXT. НОЧНАЯ УЛИЦА - НОЧЬ\n'));
+    expect(text, contains('                                   МАКСИМ\n'));
   });
 }

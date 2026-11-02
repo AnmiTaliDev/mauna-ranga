@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/app_dialog.dart';
 
 const double statsBodyMaxHeight = 360;
 const double statsNumberWidth = 90;
@@ -15,20 +17,21 @@ class StatsDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
     final TextStyle muted = theme.uiStyle.copyWith(color: theme.textSecondary);
-    return MaunaDialog(
-      title: 'Statistics',
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AppDialog(
+      title: l10n.statistics,
       child: Padding(
         padding: EdgeInsets.all(theme.spacing.md),
         child: stats.isEmpty
-            ? Text('No characters', style: muted)
+            ? Text(l10n.statsEmpty, style: muted)
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   _Row(
-                    name: 'Character',
-                    speeches: 'Speeches',
-                    words: 'Words',
+                    name: l10n.statsCharacter,
+                    speeches: l10n.statsSpeeches,
+                    words: l10n.statsWords,
                     style: muted,
                   ),
                   SizedBox(height: theme.spacing.xs),

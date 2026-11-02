@@ -2,9 +2,12 @@ import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/labels.dart';
 import '../settings/app_settings.dart';
 
 List<MaunaCommand> editorCommands({
+  required AppLocalizations l10n,
   required List<OutlineEntry> outline,
   required ValueChanged<int> goTo,
   required VoidCallback find,
@@ -29,41 +32,41 @@ List<MaunaCommand> editorCommands({
   required VoidCallback openSettings,
 }) {
   return <MaunaCommand>[
-    MaunaCommand(label: 'Open file', onSelected: open),
-    MaunaCommand(label: 'Save', onSelected: save),
-    MaunaCommand(label: 'Save as', onSelected: saveAs),
-    MaunaCommand(label: 'Export to PDF', onSelected: exportPdf),
-    MaunaCommand(label: 'Import FDX', onSelected: importFdx),
-    MaunaCommand(label: 'Export to FDX', onSelected: exportFdx),
-    MaunaCommand(label: 'Export to HTML', onSelected: exportHtml),
-    MaunaCommand(label: 'Export to text', onSelected: exportText),
+    MaunaCommand(label: l10n.commandOpenFile, onSelected: open),
+    MaunaCommand(label: l10n.save, onSelected: save),
+    MaunaCommand(label: l10n.saveAs, onSelected: saveAs),
+    MaunaCommand(label: l10n.exportPdf, onSelected: exportPdf),
+    MaunaCommand(label: l10n.importFdx, onSelected: importFdx),
+    MaunaCommand(label: l10n.exportFdx, onSelected: exportFdx),
+    MaunaCommand(label: l10n.exportHtml, onSelected: exportHtml),
+    MaunaCommand(label: l10n.exportText, onSelected: exportText),
     MaunaCommand(
-      label: focusMode ? 'Exit focus mode' : 'Enter focus mode',
+      label: focusMode ? l10n.focusModeExit : l10n.focusModeEnter,
       onSelected: toggleFocusMode,
     ),
     MaunaCommand(
-      label: sidebarOpen ? 'Hide sidebar' : 'Show sidebar',
+      label: sidebarOpen ? l10n.sidebarHide : l10n.sidebarShow,
       onSelected: toggleSidebar,
     ),
     for (final ThemePreset preset in ThemePreset.values)
       MaunaCommand(
-        label: 'Use ${preset.label} theme',
+        label: l10n.commandUseTheme(preset.label(l10n)),
         onSelected: () => changeSettings(settings.copyWith(preset: preset)),
       ),
     for (final DocumentFont font in DocumentFont.values)
       MaunaCommand(
-        label: 'Use ${font.family} font',
+        label: l10n.commandUseFont(font.family),
         onSelected: () => changeSettings(settings.copyWith(font: font)),
       ),
-    MaunaCommand(label: 'Open settings', onSelected: openSettings),
-    MaunaCommand(label: 'Find and replace', onSelected: find),
-    MaunaCommand(label: 'Show statistics', onSelected: statistics),
-    MaunaCommand(label: 'Show notes', onSelected: notes),
-    MaunaCommand(label: 'Move scene up', onSelected: moveSceneUp),
-    MaunaCommand(label: 'Move scene down', onSelected: moveSceneDown),
+    MaunaCommand(label: l10n.commandOpenSettings, onSelected: openSettings),
+    MaunaCommand(label: l10n.findAndReplace, onSelected: find),
+    MaunaCommand(label: l10n.commandShowStatistics, onSelected: statistics),
+    MaunaCommand(label: l10n.commandShowNotes, onSelected: notes),
+    MaunaCommand(label: l10n.moveSceneUp, onSelected: moveSceneUp),
+    MaunaCommand(label: l10n.moveSceneDown, onSelected: moveSceneDown),
     for (int i = 0; i < outline.length; i++)
       MaunaCommand(
-        label: 'Go to ${outline[i].title}',
+        label: l10n.commandGoTo(outline[i].title),
         onSelected: () => goTo(i),
       ),
   ];

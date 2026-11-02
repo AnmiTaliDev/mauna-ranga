@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
+import '../l10n/app_localizations.dart';
 
 const double menuMinWidth = 240;
 
@@ -32,7 +33,7 @@ class ToolbarMenu extends StatelessWidget {
     final VoidCallback? selected = await showGeneralDialog<VoidCallback>(
       context: context,
       barrierDismissible: true,
-      barrierLabel: 'Close menu',
+      barrierLabel: AppLocalizations.of(context).closeMenu,
       barrierColor: theme.bgCanvas.withValues(alpha: 0),
       transitionDuration: theme.motion.fast,
       pageBuilder:

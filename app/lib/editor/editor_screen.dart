@@ -8,6 +8,8 @@ import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
 import '../focus/focus_mode_controller.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/app_dialog.dart';
 import '../recovery/recovery_store.dart';
 import '../settings/app_settings.dart';
 import '../settings/settings_dialog.dart';
@@ -41,7 +43,6 @@ const XTypeGroup textFiles = XTypeGroup(
   label: 'Text',
   extensions: <String>['txt'],
 );
-const String untitledName = 'Untitled.fountain';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({
@@ -105,16 +106,15 @@ class _EditorScreenState extends State<EditorScreen> {
     super.dispose();
   }
 
+  AppLocalizations get _l10n => AppLocalizations.of(context);
+
   Future<void> _start() async {
     final String? path = widget.initialPath;
     final RecoverySnapshot? snapshot = await widget.recovery?.read();
     if (snapshot != null && (path == null || snapshot.path == path)) {
       final String saved = await _savedText(snapshot.path);
       if (snapshot.text != saved && await _askRestore(snapshot)) {
-        await _run(
-          'Cannot restore the document',
-          () => _editor.restore(snapshot, saved),
-        );
+        await _run(_l10n.errorRestore, () => _editor.restore(snapshot, saved));
         return;
       }
     }
@@ -144,12 +144,12 @@ class _EditorScreenState extends State<EditorScreen> {
     final String? path = snapshot.path;
     final bool restore = await showConfirmDialog(
       context: context,
-      title: 'Restore unsaved changes',
+      title: _l10n.restoreTitle,
       message: path == null
-          ? 'An unsaved document from the previous session was found.'
-          : 'Unsaved changes to ${path.split(Platform.pathSeparator).last} from the previous session were found.',
-      confirmLabel: 'Restore',
-      cancelLabel: 'Discard',
+          ? _l10n.restoreUntitled
+          : _l10n.restoreFile(path.split(Platform.pathSeparator).last),
+      confirmLabel: _l10n.restore,
+      cancelLabel: _l10n.discard,
     );
     _documentFocus.requestFocus();
     return restore;
@@ -198,7 +198,7 @@ class _EditorScreenState extends State<EditorScreen> {
   String _fileName() {
     final String? path = _editor.path;
     return path == null
-        ? untitledName
+        ? _l10n.untitledFileName
         : path.split(Platform.pathSeparator).last;
   }
 
@@ -249,7 +249,7 @@ class _EditorScreenState extends State<EditorScreen> {
   String _suggestedName(String extension) {
     final String? path = _editor.path;
     final String name = path == null
-        ? untitledName
+        ? _l10n.untitledFileName
         : path.split(Platform.pathSeparator).last;
     final int dot = name.lastIndexOf('.');
     return '${dot > 0 ? name.substring(0, dot) : name}.$extension';
@@ -283,15 +283,12 @@ class _EditorScreenState extends State<EditorScreen> {
     );
     _documentFocus.requestFocus();
     if (file != null) {
-      await _run('Cannot import the file', () => _editor.importFdx(file.path));
+      await _run(_l10n.errorImport, () => _editor.importFdx(file.path));
     }
   }
 
   Future<void> _openPath(String path) async {
-    final bool opened = await _run(
-      'Cannot open the file',
-      () => _editor.open(path),
-    );
+    final bool opened = await _run(_l10n.errorOpen, () => _editor.open(path));
     widget.onSettingsChanged(
       opened
           ? widget.settings.withRecentFile(path)
@@ -309,10 +306,7 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _saveTo(String path) async {
-    final bool saved = await _run(
-      'Cannot save the file',
-      () => _editor.save(path),
-    );
+    final bool saved = await _run(_l10n.errorSave, () => _editor.save(path));
     if (saved) {
       widget.onSettingsChanged(widget.settings.withRecentFile(path));
     }
@@ -329,8 +323,8 @@ class _EditorScreenState extends State<EditorScreen> {
     final String? path = await _saveLocation(pdfFiles, 'pdf');
     if (path != null) {
       await _run(
-        'Cannot export to PDF',
-        () => _editor.exportPdf(path, widget.settings),
+        _l10n.errorExportPdf,
+        () => _editor.exportPdf(path, widget.settings, _l10n),
       );
     }
   }
@@ -338,7 +332,7 @@ class _EditorScreenState extends State<EditorScreen> {
   Future<void> _exportFdx() async {
     final String? path = await _saveLocation(fdxFiles, 'fdx');
     if (path != null) {
-      await _run('Cannot export to FDX', () => _editor.exportFdx(path));
+      await _run(_l10n.errorExportFdx, () => _editor.exportFdx(path));
     }
   }
 
@@ -361,14 +355,14 @@ class _EditorScreenState extends State<EditorScreen> {
   Future<void> _exportHtml() async {
     final String? path = await _saveLocation(htmlFiles, 'html');
     if (path != null) {
-      await _run('Cannot export to HTML', () => _editor.exportHtml(path));
+      await _run(_l10n.errorExportHtml, () => _editor.exportHtml(path));
     }
   }
 
   Future<void> _exportText() async {
     final String? path = await _saveLocation(textFiles, 'txt');
     if (path != null) {
-      await _run('Cannot export to text', () => _editor.exportText(path));
+      await _run(_l10n.errorExportText, () => _editor.exportText(path));
     }
   }
 
@@ -389,7 +383,7 @@ class _EditorScreenState extends State<EditorScreen> {
   void _moveSceneDown() => _editor.moveCurrentScene(1);
 
   Future<void> _openNotes() async {
-    final int? offset = await showMaunaDialog<int>(
+    final int? offset = await showAppDialog<int>(
       context: context,
       builder: (BuildContext context) => NotesDialog(notes: _editor.notes()),
     );
@@ -400,7 +394,7 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _openStats() async {
-    await showMaunaDialog<void>(
+    await showAppDialog<void>(
       context: context,
       builder: (BuildContext context) =>
           StatsDialog(stats: _editor.characterStats()),
@@ -413,7 +407,7 @@ class _EditorScreenState extends State<EditorScreen> {
     final String selected = selection.isValid && !selection.isCollapsed
         ? selection.textInside(_editor.text.text)
         : '';
-    await showMaunaDialog<void>(
+    await showAppDialog<void>(
       context: context,
       builder: (BuildContext context) => FindReplaceDialog(
         text: _editor.text,
@@ -424,10 +418,13 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _openPalette() async {
-    await showMaunaPopup<void>(
+    await showAppPopup<void>(
       context: context,
       builder: (BuildContext context) => MaunaCommandPalette(
+        placeholder: _l10n.paletteHint,
+        emptyLabel: _l10n.paletteEmpty,
         commands: editorCommands(
+          l10n: _l10n,
           outline: _editor.outline,
           goTo: _goTo,
           find: _openFind,
@@ -457,7 +454,7 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> _openSettings() async {
-    await showMaunaDialog<void>(
+    await showAppDialog<void>(
       context: context,
       builder: (BuildContext context) => SettingsDialog(
         settings: widget.settings,
@@ -471,15 +468,16 @@ class _EditorScreenState extends State<EditorScreen> {
     final int? pages = _editor.pages;
     final double? runtime = _editor.runtimeMinutes;
     return <String>[
-      'Words: ${_editor.words}',
-      if (pages != null) 'Pages: $pages',
-      if (runtime != null) 'Runtime: ${runtime.round()} min',
+      _l10n.statusWords(_editor.words),
+      if (pages != null) _l10n.statusPages(pages),
+      if (runtime != null) _l10n.statusRuntime(runtime.round()),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     final bool dimmed =
         widget.settings.dimWhileTyping &&
         _focus.writing &&
@@ -536,63 +534,65 @@ class _EditorScreenState extends State<EditorScreen> {
                       dimmed: dimmed,
                       leading: <Widget>[
                         ToolbarMenu(
-                          label: 'File',
+                          label: l10n.menuFile,
                           entries: <MenuEntry>[
-                            MenuEntry('Open', _open, shortcut: 'Ctrl+O'),
+                            MenuEntry(l10n.open, _open, shortcut: 'Ctrl+O'),
                             for (final String file
                                 in widget.settings.recentFiles)
                               MenuEntry(
-                                'Open ${file.split(Platform.pathSeparator).last}',
+                                l10n.openRecent(
+                                  file.split(Platform.pathSeparator).last,
+                                ),
                                 () => _openPath(file),
                               ),
-                            MenuEntry('Save', _save, shortcut: 'Ctrl+S'),
+                            MenuEntry(l10n.save, _save, shortcut: 'Ctrl+S'),
                             MenuEntry(
-                              'Save as',
+                              l10n.saveAs,
                               _saveAs,
                               shortcut: 'Ctrl+Shift+S',
                             ),
                             const MenuEntry.separator(),
-                            MenuEntry('Import FDX', _importFdx),
-                            MenuEntry('Export to PDF', _exportPdf),
-                            MenuEntry('Export to FDX', _exportFdx),
-                            MenuEntry('Export to HTML', _exportHtml),
-                            MenuEntry('Export to text', _exportText),
+                            MenuEntry(l10n.importFdx, _importFdx),
+                            MenuEntry(l10n.exportPdf, _exportPdf),
+                            MenuEntry(l10n.exportFdx, _exportFdx),
+                            MenuEntry(l10n.exportHtml, _exportHtml),
+                            MenuEntry(l10n.exportText, _exportText),
                           ],
                         ),
                         ToolbarMenu(
-                          label: 'View',
+                          label: l10n.menuView,
                           entries: <MenuEntry>[
                             MenuEntry(
-                              'Commands',
+                              l10n.menuCommands,
                               _openPalette,
                               shortcut: 'Ctrl+K',
                             ),
                             MenuEntry(
                               _focus.sidebarOpen
-                                  ? 'Hide sidebar'
-                                  : 'Show sidebar',
+                                  ? l10n.sidebarHide
+                                  : l10n.sidebarShow,
                               _focus.toggleSidebar,
                               shortcut: 'Ctrl+B',
                             ),
                             MenuEntry(
-                              'Find and replace',
+                              l10n.findAndReplace,
                               _openFind,
                               shortcut: 'Ctrl+F',
                             ),
-                            MenuEntry('Statistics', _openStats),
-                            MenuEntry('Notes', _openNotes),
+                            MenuEntry(l10n.statistics, _openStats),
+                            MenuEntry(l10n.notes, _openNotes),
                             MenuEntry(
-                              'Move scene up',
+                              l10n.moveSceneUp,
                               _moveSceneUp,
                               shortcut: 'Alt+Up',
                             ),
                             MenuEntry(
-                              'Move scene down',
+                              l10n.moveSceneDown,
                               _moveSceneDown,
                               shortcut: 'Alt+Down',
                             ),
                             MenuEntry(
-                              'Enter focus mode',
+                              l10n.focusModeEnter,
                               _toggleFocusMode,
                               shortcut: 'Ctrl+Shift+F',
                             ),
@@ -602,7 +602,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       trailing: <Widget>[
                         MaunaToolbarChip(
                           icon: MaunaGlyphs.settings(),
-                          label: 'Settings',
+                          label: l10n.settings,
                           onPressed: _openSettings,
                         ),
                       ],
@@ -612,7 +612,7 @@ class _EditorScreenState extends State<EditorScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: <Widget>[
                           MaunaSidebar(
-                            title: 'Scenes',
+                            title: l10n.sidebarTitle,
                             items: <String>[
                               for (final OutlineEntry entry in outline)
                                 entry.title,
@@ -627,7 +627,7 @@ class _EditorScreenState extends State<EditorScreen> {
                               key: ValueKey<int>(_editor.loadCount),
                               controller: _editor.text,
                               focusNode: _documentFocus,
-                              placeholder: 'Start writing',
+                              placeholder: l10n.documentPlaceholder,
                               autofocus: true,
                             ),
                           ),
@@ -653,6 +653,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     right: theme.spacing.xs,
                     child: MaunaToolbarRestoreButton(
                       onPressed: _focus.exitFocusMode,
+                      label: l10n.showToolbar,
                     ),
                   ),
               ],

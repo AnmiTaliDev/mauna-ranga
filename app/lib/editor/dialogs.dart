@@ -1,16 +1,18 @@
 import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/app_dialog.dart';
 
 Future<void> showMessageDialog({
   required BuildContext context,
   required String title,
   required String message,
 }) {
-  return showMaunaDialog<void>(
+  return showAppDialog<void>(
     context: context,
     builder: (BuildContext context) {
       final MaunaThemeData theme = MaunaThemeData.of(context);
-      return MaunaDialog(
+      return AppDialog(
         title: title,
         child: Padding(
           padding: EdgeInsets.all(theme.spacing.md),
@@ -28,11 +30,11 @@ Future<bool> showConfirmDialog({
   required String confirmLabel,
   required String cancelLabel,
 }) async {
-  final bool? confirmed = await showMaunaDialog<bool>(
+  final bool? confirmed = await showAppDialog<bool>(
     context: context,
     builder: (BuildContext context) {
       final MaunaThemeData theme = MaunaThemeData.of(context);
-      return MaunaDialog(
+      return AppDialog(
         title: title,
         child: Padding(
           padding: EdgeInsets.all(theme.spacing.md),
@@ -70,22 +72,20 @@ Future<UnsavedChoice> showUnsavedDialog({
   required BuildContext context,
   required String name,
 }) async {
-  final UnsavedChoice? choice = await showMaunaDialog<UnsavedChoice>(
+  final UnsavedChoice? choice = await showAppDialog<UnsavedChoice>(
     context: context,
     builder: (BuildContext context) {
       final MaunaThemeData theme = MaunaThemeData.of(context);
-      return MaunaDialog(
-        title: 'Unsaved changes',
+      final AppLocalizations l10n = AppLocalizations.of(context);
+      return AppDialog(
+        title: l10n.unsavedTitle,
         child: Padding(
           padding: EdgeInsets.all(theme.spacing.md),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Text(
-                'Save changes to $name before closing?',
-                style: theme.uiStyle,
-              ),
+              Text(l10n.unsavedMessage(name), style: theme.uiStyle),
               SizedBox(height: theme.spacing.md),
               Wrap(
                 spacing: theme.spacing.xs,
@@ -93,9 +93,9 @@ Future<UnsavedChoice> showUnsavedDialog({
                   for (final UnsavedChoice option in UnsavedChoice.values)
                     MaunaToolbarChip(
                       label: switch (option) {
-                        UnsavedChoice.save => 'Save',
-                        UnsavedChoice.discard => 'Discard',
-                        UnsavedChoice.cancel => 'Cancel',
+                        UnsavedChoice.save => l10n.save,
+                        UnsavedChoice.discard => l10n.discard,
+                        UnsavedChoice.cancel => l10n.cancel,
                       },
                       onPressed: () => Navigator.of(context).pop(option),
                     ),

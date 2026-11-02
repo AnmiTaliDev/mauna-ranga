@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 import 'window_controls.dart';
+import '../l10n/app_localizations.dart';
 
 const double resizeBorder = 5;
 const double resizeCorner = 12;
@@ -16,6 +17,7 @@ class TitleBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return Opacity(
       opacity: dimmed ? theme.metrics.dimmedChromeOpacity : 1,
       child: Container(
@@ -55,17 +57,17 @@ class TitleBar extends StatelessWidget {
                 children: <Widget>[
                   MaunaToolbarButton(
                     icon: _minimizeGlyph(),
-                    label: 'Minimize',
+                    label: l10n.windowMinimize,
                     onPressed: WindowControls.minimize,
                   ),
                   MaunaToolbarButton(
                     icon: _maximizeGlyph(),
-                    label: 'Maximize',
+                    label: l10n.windowMaximize,
                     onPressed: WindowControls.toggleMaximize,
                   ),
                   MaunaToolbarButton(
                     icon: MaunaGlyphs.close(),
-                    label: 'Close window',
+                    label: l10n.windowClose,
                     onPressed: WindowControls.close,
                   ),
                 ],

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mauna_ranga/editor/editor_controller.dart';
+import 'package:mauna_ranga/l10n/app_localizations_en.dart';
 import 'package:mauna_ranga/settings/app_settings.dart';
 
 import 'rust_library.dart';
@@ -30,18 +31,25 @@ void main() {
       text: script,
       selection: TextSelection.collapsed(offset: script.length),
     );
-    await editor.exportPdf('${dir.path}/default.pdf', const AppSettings());
+    await editor.exportPdf(
+      '${dir.path}/default.pdf',
+      const AppSettings(),
+      AppLocalizationsEn(),
+    );
     await editor.exportPdf(
       '${dir.path}/plain.pdf',
       const AppSettings(pdfTitlePage: false),
+      AppLocalizationsEn(),
     );
     await editor.exportPdf(
       '${dir.path}/marked.pdf',
       const AppSettings(pdfWatermark: 'CONFIDENTIAL'),
+      AppLocalizationsEn(),
     );
     await editor.exportPdf(
       '${dir.path}/notes.pdf',
       const AppSettings(pdfNotesPage: true),
+      AppLocalizationsEn(),
     );
     final List<int> withNotes = File('${dir.path}/notes.pdf').readAsBytesSync();
     final List<int> byDefault = File(

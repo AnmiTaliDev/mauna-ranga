@@ -9,6 +9,7 @@ Desktop Fountain screenplay editor. It uses the Mauna Ranga engine through `flut
 - Flutter 3.35 or newer (Dart 3.9 or newer)
 - Rust toolchain, see [../mauna-ranga/README.md](../mauna-ranga/README.md)
 - `mauna` 0.1, `flutter_rust_bridge` 2.13.0, `file_selector` 1.1
+- `flutter_localizations` (Flutter SDK) and `intl` 0.20, for the localized interface
 - `flutter_rust_bridge_codegen` 2.13.0, only to regenerate bindings
 
 ## Build
@@ -75,6 +76,14 @@ Settings are stored in `$XDG_CONFIG_HOME/mauna-ranga/settings.json` (`~/.config/
 - Dimming of the panels while typing
 - PDF export: title page on or off, page numbers on or off, a notes page on or off, watermark text
 - The list of recent files
+
+## Localization
+
+The interface is available in English and Russian. The language is chosen in Settings, Editor, and follows the system language by default. Messages live in `lib/l10n/app_en.arb` (the template) and `lib/l10n/app_ru.arb`, and `flutter gen-l10n` turns them into `AppLocalizations` in `lib/l10n`. The generated files are committed. `flutter run` regenerates them when an ARB file changes, and `flutter gen-l10n` does it by hand.
+
+To add a language, copy `app_en.arb` to `app_<code>.arb`, translate the values, and add an `AppLanguage` value with its `Locale` in `lib/settings/app_settings.dart` and its name in `lib/l10n/labels.dart`. `test/l10n_test.dart` checks that every locale has the same keys and placeholders as the template.
+
+Not translated: error text that the engine produces, file dialog filter names (Fountain, Final Draft, PDF, HTML, Text), the `(MORE)` and `(CONT'D)` labels of the printed page, and key names in shortcuts. The title of the notes page in PDF export follows the interface language when the document font has Cyrillic glyphs (JetBrains Mono) and stays English with Courier Prime, which would print empty boxes.
 
 ## Editor highlighting
 

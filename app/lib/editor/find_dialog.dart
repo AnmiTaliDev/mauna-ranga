@@ -3,6 +3,8 @@ import 'package:mauna/mauna.dart';
 
 import '../widgets/dialog_text_field.dart';
 import 'search.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/app_dialog.dart';
 
 class FindReplaceDialog extends StatefulWidget {
   const FindReplaceDialog({
@@ -40,7 +42,9 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
 
   void _next() {
     final bool found = findNext(widget.text, _find.text, wholeWord: _wholeWord);
-    setState(() => _status = found ? '' : 'No matches');
+    setState(
+      () => _status = found ? '' : AppLocalizations.of(context).noMatches,
+    );
   }
 
   void _replaceOne() {
@@ -50,7 +54,9 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
       _replace.text,
       wholeWord: _wholeWord,
     );
-    setState(() => _status = found ? '' : 'No matches');
+    setState(
+      () => _status = found ? '' : AppLocalizations.of(context).noMatches,
+    );
   }
 
   void _replaceEvery() {
@@ -60,14 +66,18 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
       _replace.text,
       wholeWord: _wholeWord,
     );
-    setState(() => _status = count == 0 ? 'No matches' : 'Replaced $count');
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    setState(
+      () => _status = count == 0 ? l10n.noMatches : l10n.replacedCount(count),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
-    return MaunaDialog(
-      title: 'Find and replace',
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AppDialog(
+      title: l10n.findAndReplace,
       child: Padding(
         padding: EdgeInsets.all(theme.spacing.md),
         child: Column(
@@ -77,7 +87,7 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
             DialogTextField(
               controller: _find,
               focusNode: _findFocus,
-              placeholder: 'Find',
+              placeholder: l10n.findPlaceholder,
               autofocus: true,
               onSubmitted: _next,
             ),
@@ -85,7 +95,7 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
             DialogTextField(
               controller: _replace,
               focusNode: _replaceFocus,
-              placeholder: 'Replace with',
+              placeholder: l10n.replacePlaceholder,
               onSubmitted: _replaceOne,
             ),
             SizedBox(height: theme.spacing.sm),
@@ -93,14 +103,14 @@ class _FindReplaceDialogState extends State<FindReplaceDialog> {
               spacing: theme.spacing.xs,
               runSpacing: theme.spacing.xs,
               children: <Widget>[
-                MaunaToolbarChip(label: 'Find next', onPressed: _next),
-                MaunaToolbarChip(label: 'Replace', onPressed: _replaceOne),
+                MaunaToolbarChip(label: l10n.findNext, onPressed: _next),
+                MaunaToolbarChip(label: l10n.replace, onPressed: _replaceOne),
                 MaunaToolbarChip(
-                  label: 'Replace all',
+                  label: l10n.replaceAll,
                   onPressed: _replaceEvery,
                 ),
                 MaunaToolbarChip(
-                  label: _wholeWord ? 'Whole word: on' : 'Whole word: off',
+                  label: _wholeWord ? l10n.wholeWordOn : l10n.wholeWordOff,
                   onPressed: () => setState(() => _wholeWord = !_wholeWord),
                 ),
               ],

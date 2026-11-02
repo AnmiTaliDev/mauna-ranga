@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'bridge/generated/frb_generated.dart';
 import 'editor/editor_screen.dart';
+import 'l10n/app_localizations.dart';
 import 'recovery/recovery_store.dart';
 import 'settings/app_settings.dart';
 import 'settings/settings_store.dart';
@@ -55,7 +56,11 @@ class _RangaAppState extends State<RangaApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Mauna Ranga',
+      onGenerateTitle: (BuildContext context) =>
+          AppLocalizations.of(context).appTitle,
+      locale: _settings.language.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       theme: _settings.theme().toMaterialTheme(),
       home: EditorScreen(

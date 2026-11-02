@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/app_dialog.dart';
 
 const double notesBodyMaxHeight = 360;
 
@@ -14,12 +16,13 @@ class NotesDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final MaunaThemeData theme = MaunaThemeData.of(context);
     final TextStyle muted = theme.uiStyle.copyWith(color: theme.textSecondary);
-    return MaunaDialog(
-      title: 'Notes',
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return AppDialog(
+      title: l10n.notes,
       child: Padding(
         padding: EdgeInsets.all(theme.spacing.md),
         child: notes.isEmpty
-            ? Text('No notes', style: muted)
+            ? Text(l10n.notesEmpty, style: muted)
             : ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxHeight: notesBodyMaxHeight,
@@ -39,7 +42,7 @@ class NotesDialog extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
                                 Text(
-                                  note.scene ?? 'Before the first scene',
+                                  note.scene ?? l10n.notesBeforeFirstScene,
                                   style: muted,
                                 ),
                                 Text(note.text, style: theme.uiStyle),

@@ -8,12 +8,18 @@ import 'package:flutter/widgets.dart';
 import '../bridge/generated/api/document.dart';
 import '../bridge/generated/api/export.dart' as bridge;
 import '../bridge/generated/api/import.dart' as importer;
+import '../l10n/app_localizations.dart';
+import '../l10n/app_localizations_en.dart';
 import '../recovery/recovery_store.dart';
 import '../settings/app_settings.dart';
 import 'fountain_elements.dart';
 import 'completion.dart';
 import 'fountain_text_controller.dart';
 import 'scene_order.dart';
+
+AppLocalizations pdfLabels(AppSettings settings, AppLocalizations l10n) {
+  return settings.font.hasCyrillic ? l10n : AppLocalizationsEn();
+}
 
 const Duration statsDelay = Duration(milliseconds: 300);
 
@@ -103,8 +109,13 @@ class EditorController extends ChangeNotifier {
     await recovery?.clear();
   }
 
-  Future<void> exportPdf(String path, AppSettings settings) async {
+  Future<void> exportPdf(
+    String path,
+    AppSettings settings,
+    AppLocalizations l10n,
+  ) async {
     final String prefix = settings.font.filePrefix;
+    final AppLocalizations labels = pdfLabels(settings, l10n);
     final Uint8List bytes = await bridge.exportPdf(
       handle: _handle!,
       fonts: bridge.FontFiles(
@@ -117,6 +128,8 @@ class EditorController extends ChangeNotifier {
         titlePage: settings.pdfTitlePage,
         pageNumbers: settings.pdfPageNumbers,
         notesPage: settings.pdfNotesPage,
+        notesTitle: labels.notesPageTitle,
+        notesBeforeFirstScene: labels.notesBeforeFirstScene,
         watermark: settings.pdfWatermark,
       ),
     );

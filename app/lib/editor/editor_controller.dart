@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 
 import '../bridge/generated/api/document.dart';
 import '../bridge/generated/api/export.dart' as bridge;
+import '../recovery/recovery_store.dart';
 import '../settings/app_settings.dart';
 import 'fountain_elements.dart';
 import 'completion.dart';
@@ -16,9 +17,16 @@ import 'scene_order.dart';
 const Duration statsDelay = Duration(milliseconds: 300);
 
 class EditorController extends ChangeNotifier {
-  EditorController() {
+  EditorController({
+    this.recovery,
+    this.recoveryDelay = const Duration(seconds: 2),
+  }) {
     text.addListener(_onTextChanged);
   }
+
+  final RecoveryStore? recovery;
+
+  final Duration recoveryDelay;
 
   final FountainTextController text = FountainTextController();
 
@@ -26,6 +34,8 @@ class EditorController extends ChangeNotifier {
   String _lastText = '';
   int _generation = 0;
   Timer? _statsTimer;
+  Timer? _recoveryTimer;
+  String _savedText = '';
   CompletionSession? _completion;
 
   String? path;
@@ -46,6 +56,7 @@ class EditorController extends ChangeNotifier {
   @override
   void dispose() {
     _statsTimer?.cancel();
+    _recoveryTimer?.cancel();
     text.dispose();
     _handle?.dispose();
     super.dispose();
@@ -54,6 +65,7 @@ class EditorController extends ChangeNotifier {
   Future<void> load(String source, {String? path}) async {
     await _replaceHandle(source);
     this.path = path;
+    _savedText = source;
     text.value = TextEditingValue(
       text: source,
       selection: const TextSelection.collapsed(offset: 0),
@@ -63,11 +75,21 @@ class EditorController extends ChangeNotifier {
   Future<void> open(String path) async {
     final String source = await File(path).readAsString();
     await load(source, path: path);
+    await recovery?.clear();
+  }
+
+  Future<void> restore(RecoverySnapshot snapshot, String saved) async {
+    await load(snapshot.text, path: snapshot.path);
+    _savedText = saved;
+    await _syncRecovery();
   }
 
   Future<void> save(String path) async {
-    await File(path).writeAsString(text.text);
+    final String current = text.text;
+    await File(path).writeAsString(current);
     this.path = path;
+    _savedText = current;
+    await recovery?.clear();
     notifyListeners();
   }
 
@@ -184,6 +206,7 @@ class EditorController extends ChangeNotifier {
     }
     final TextEdit edit = _diff(_lastText, current);
     _lastText = current;
+    _scheduleRecovery();
     try {
       final DocumentSnapshot snapshot = applyEdit(handle: handle, edit: edit);
       applySnapshot(text.elements, snapshot);
@@ -198,6 +221,31 @@ class EditorController extends ChangeNotifier {
     outline = documentOutline(handle: handle);
     _scheduleStats();
     notifyListeners();
+  }
+
+  void _scheduleRecovery() {
+    if (recovery == null) {
+      return;
+    }
+    _recoveryTimer?.cancel();
+    _recoveryTimer = Timer(recoveryDelay, () => unawaited(_syncRecovery()));
+  }
+
+  Future<void> _syncRecovery() async {
+    final RecoveryStore? store = recovery;
+    if (store == null) {
+      return;
+    }
+    final String current = text.text;
+    try {
+      if (current == _savedText) {
+        await store.clear();
+      } else {
+        await store.write(path, current);
+      }
+    } on FileSystemException {
+      return;
+    }
   }
 
   void _scheduleStats() {

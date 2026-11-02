@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'bridge/generated/frb_generated.dart';
 import 'editor/editor_screen.dart';
+import 'recovery/recovery_store.dart';
 import 'settings/app_settings.dart';
 import 'settings/settings_store.dart';
 
@@ -17,6 +18,7 @@ Future<void> main(List<String> args) async {
       store: store,
       settings: settings,
       initialPath: args.isEmpty ? null : args.first,
+      recovery: RecoveryStore.forUser(),
     ),
   );
 }
@@ -27,6 +29,7 @@ class RangaApp extends StatefulWidget {
     required this.store,
     required this.settings,
     this.initialPath,
+    this.recovery,
   });
 
   final SettingsStore store;
@@ -34,6 +37,8 @@ class RangaApp extends StatefulWidget {
   final AppSettings settings;
 
   final String? initialPath;
+
+  final RecoveryStore? recovery;
 
   @override
   State<RangaApp> createState() => _RangaAppState();
@@ -57,6 +62,7 @@ class _RangaAppState extends State<RangaApp> {
         settings: _settings,
         onSettingsChanged: _setSettings,
         initialPath: widget.initialPath,
+        recovery: widget.recovery,
       ),
     );
   }

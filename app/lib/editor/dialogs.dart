@@ -20,3 +20,46 @@ Future<void> showMessageDialog({
     },
   );
 }
+
+Future<bool> showConfirmDialog({
+  required BuildContext context,
+  required String title,
+  required String message,
+  required String confirmLabel,
+  required String cancelLabel,
+}) async {
+  final bool? confirmed = await showMaunaDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      final MaunaThemeData theme = MaunaThemeData.of(context);
+      return MaunaDialog(
+        title: title,
+        child: Padding(
+          padding: EdgeInsets.all(theme.spacing.md),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(message, style: theme.uiStyle),
+              SizedBox(height: theme.spacing.md),
+              Wrap(
+                spacing: theme.spacing.xs,
+                children: <Widget>[
+                  MaunaToolbarChip(
+                    label: confirmLabel,
+                    onPressed: () => Navigator.of(context).pop(true),
+                  ),
+                  MaunaToolbarChip(
+                    label: cancelLabel,
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+  return confirmed ?? false;
+}

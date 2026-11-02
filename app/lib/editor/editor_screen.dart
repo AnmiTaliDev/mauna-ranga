@@ -8,6 +8,7 @@ import 'package:mauna/mauna.dart';
 
 import '../bridge/generated/api/document.dart';
 import '../focus/focus_mode_controller.dart';
+import '../recovery/recovery_store.dart';
 import '../settings/app_settings.dart';
 import '../settings/settings_dialog.dart';
 import 'command_palette_commands.dart';
@@ -36,6 +37,7 @@ class EditorScreen extends StatefulWidget {
     required this.settings,
     required this.onSettingsChanged,
     this.initialPath,
+    this.recovery,
   });
 
   final AppSettings settings;
@@ -44,12 +46,16 @@ class EditorScreen extends StatefulWidget {
 
   final String? initialPath;
 
+  final RecoveryStore? recovery;
+
   @override
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
 class _EditorScreenState extends State<EditorScreen> {
-  final EditorController _editor = EditorController();
+  late final EditorController _editor = EditorController(
+    recovery: widget.recovery,
+  );
   final FocusModeController _focus = FocusModeController();
   final FocusNode _documentFocus = FocusNode();
   String _lastText = '';
@@ -81,11 +87,52 @@ class _EditorScreenState extends State<EditorScreen> {
 
   Future<void> _start() async {
     final String? path = widget.initialPath;
+    final RecoverySnapshot? snapshot = await widget.recovery?.read();
+    if (snapshot != null && (path == null || snapshot.path == path)) {
+      final String saved = await _savedText(snapshot.path);
+      if (snapshot.text != saved && await _askRestore(snapshot)) {
+        await _run(
+          'Cannot restore the document',
+          () => _editor.restore(snapshot, saved),
+        );
+        return;
+      }
+    }
+    await widget.recovery?.clear();
     if (path == null) {
       await _editor.load('');
       return;
     }
     await _run('Cannot open the file', () => _editor.open(path));
+  }
+
+  Future<String> _savedText(String? path) async {
+    if (path == null) {
+      return '';
+    }
+    try {
+      return await File(path).readAsString();
+    } on FileSystemException {
+      return '';
+    }
+  }
+
+  Future<bool> _askRestore(RecoverySnapshot snapshot) async {
+    if (!mounted) {
+      return false;
+    }
+    final String? path = snapshot.path;
+    final bool restore = await showConfirmDialog(
+      context: context,
+      title: 'Restore unsaved changes',
+      message: path == null
+          ? 'An unsaved document from the previous session was found.'
+          : 'Unsaved changes to ${path.split(Platform.pathSeparator).last} from the previous session were found.',
+      confirmLabel: 'Restore',
+      cancelLabel: 'Discard',
+    );
+    _documentFocus.requestFocus();
+    return restore;
   }
 
   void _onChanged() {

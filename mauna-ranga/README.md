@@ -48,6 +48,8 @@ The word count lives in `ranga-core`, because each element keeps its own count a
 
 Scene numbers written as `#n#` are printed on both sides of the heading. A dual dialogue pair (a character with `^` and the dialogue right before it) is laid out in two columns and is not split across pages unless it is taller than a page. Column indents are the `ParagraphSpec` values of the Final Draft template in the sample `.fdx` files from fountain.io. Page size (US Letter), 1 inch top and bottom margins, 10 characters and 6 lines per inch are the common screenplay values and can be changed in `PageConfig`. One page is counted as one minute by default. The value is a parameter of `estimated_runtime_minutes`.
 
+PDF export takes `PdfOptions`: the title page and page numbers can be left out, and a watermark text can be printed in light grey at 45 degrees on every page. A blank watermark is ignored.
+
 Known limitations:
 
 - Action and dialogue break at line boundaries with at least two lines on each side. The break is placed after the last line that ends with `.`, `!`, `?` or `…` when there is one. A line that ends with an abbreviation such as `Mr.` counts as a sentence end.

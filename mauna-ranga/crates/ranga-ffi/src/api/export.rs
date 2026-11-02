@@ -1,4 +1,4 @@
-use ranga_export::{PdfFonts, export_fdx as write_fdx, export_pdf as write_pdf};
+use ranga_export::{PdfFonts, PdfOptions, export_fdx as write_fdx, export_pdf as write_pdf};
 use ranga_layout::{PageConfig, paginate};
 
 use crate::api::document::DocumentHandle;
@@ -10,7 +10,17 @@ pub struct FontFiles {
     pub bold_italic: Vec<u8>,
 }
 
-pub async fn export_pdf(handle: &DocumentHandle, fonts: FontFiles) -> Result<Vec<u8>, String> {
+pub struct PdfSettings {
+    pub title_page: bool,
+    pub page_numbers: bool,
+    pub watermark: String,
+}
+
+pub async fn export_pdf(
+    handle: &DocumentHandle,
+    fonts: FontFiles,
+    settings: PdfSettings,
+) -> Result<Vec<u8>, String> {
     let document = handle.current()?;
     let config = PageConfig::default();
     let pages = paginate(&document, &config);
@@ -20,7 +30,12 @@ pub async fn export_pdf(handle: &DocumentHandle, fonts: FontFiles) -> Result<Vec
         italic: &fonts.italic,
         bold_italic: &fonts.bold_italic,
     };
-    write_pdf(&document, &pages, &config, &fonts).map_err(|error| error.to_string())
+    let options = PdfOptions {
+        title_page: settings.title_page,
+        page_numbers: settings.page_numbers,
+        watermark: Some(settings.watermark),
+    };
+    write_pdf(&document, &pages, &config, &fonts, &options).map_err(|error| error.to_string())
 }
 
 pub async fn export_fdx(handle: &DocumentHandle) -> Result<String, String> {

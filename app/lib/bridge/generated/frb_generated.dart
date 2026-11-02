@@ -110,6 +110,7 @@ abstract class RustLibApi extends BaseApi {
   Future<Uint8List> crateApiExportExportPdf({
     required DocumentHandle handle,
     required FontFiles fonts,
+    required PdfSettings settings,
   });
 
   Future<void> crateApiInitApp();
@@ -361,6 +362,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<Uint8List> crateApiExportExportPdf({
     required DocumentHandle handle,
     required FontFiles fonts,
+    required PdfSettings settings,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -371,6 +373,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_box_autoadd_font_files(fonts, serializer);
+          sse_encode_box_autoadd_pdf_settings(settings, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -383,7 +386,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_String,
         ),
         constMeta: kCrateApiExportExportPdfConstMeta,
-        argValues: [handle, fonts],
+        argValues: [handle, fonts, settings],
         apiImpl: this,
       ),
     );
@@ -391,7 +394,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiExportExportPdfConstMeta => const TaskConstMeta(
     debugName: "export_pdf",
-    argNames: ["handle", "fonts"],
+    argNames: ["handle", "fonts", "settings"],
   );
 
   @override
@@ -522,6 +525,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool dco_decode_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
   FontFiles dco_decode_box_autoadd_font_files(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_font_files(raw);
@@ -531,6 +540,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PageSettings dco_decode_box_autoadd_page_settings(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_page_settings(raw);
+  }
+
+  @protected
+  PdfSettings dco_decode_box_autoadd_pdf_settings(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_pdf_settings(raw);
   }
 
   @protected
@@ -718,6 +733,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PdfSettings dco_decode_pdf_settings(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return PdfSettings(
+      titlePage: dco_decode_bool(arr[0]),
+      pageNumbers: dco_decode_bool(arr[1]),
+      watermark: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
   SpanStyle dco_decode_span_style(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return SpanStyle.values[raw as int];
@@ -817,6 +845,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
   FontFiles sse_decode_box_autoadd_font_files(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_font_files(deserializer));
@@ -828,6 +862,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_page_settings(deserializer));
+  }
+
+  @protected
+  PdfSettings sse_decode_box_autoadd_pdf_settings(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_pdf_settings(deserializer));
   }
 
   @protected
@@ -1060,6 +1102,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PdfSettings sse_decode_pdf_settings(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_titlePage = sse_decode_bool(deserializer);
+    var var_pageNumbers = sse_decode_bool(deserializer);
+    var var_watermark = sse_decode_String(deserializer);
+    return PdfSettings(
+      titlePage: var_titlePage,
+      pageNumbers: var_pageNumbers,
+      watermark: var_watermark,
+    );
+  }
+
+  @protected
   SpanStyle sse_decode_span_style(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
@@ -1112,12 +1167,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8() != 0;
-  }
-
-  @protected
   void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerDocumentHandle(
     DocumentHandle self,
@@ -1163,6 +1212,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
   void sse_encode_box_autoadd_font_files(
     FontFiles self,
     SseSerializer serializer,
@@ -1178,6 +1233,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_page_settings(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_pdf_settings(
+    PdfSettings self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_pdf_settings(self, serializer);
   }
 
   @protected
@@ -1374,6 +1438,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_pdf_settings(PdfSettings self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_bool(self.titlePage, serializer);
+    sse_encode_bool(self.pageNumbers, serializer);
+    sse_encode_String(self.watermark, serializer);
+  }
+
+  @protected
   void sse_encode_span_style(SpanStyle self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
@@ -1416,12 +1488,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_usize(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putBigUint64(self);
-  }
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self ? 1 : 0);
   }
 }
 

@@ -45,10 +45,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  bool dco_decode_bool(dynamic raw);
+
+  @protected
   FontFiles dco_decode_box_autoadd_font_files(dynamic raw);
 
   @protected
   PageSettings dco_decode_box_autoadd_page_settings(dynamic raw);
+
+  @protected
+  PdfSettings dco_decode_box_autoadd_pdf_settings(dynamic raw);
 
   @protected
   TextEdit dco_decode_box_autoadd_text_edit(dynamic raw);
@@ -114,6 +120,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PageSnapshot dco_decode_page_snapshot(dynamic raw);
 
   @protected
+  PdfSettings dco_decode_pdf_settings(dynamic raw);
+
+  @protected
   SpanStyle dco_decode_span_style(dynamic raw);
 
   @protected
@@ -156,12 +165,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
   FontFiles sse_decode_box_autoadd_font_files(SseDeserializer deserializer);
 
   @protected
   PageSettings sse_decode_box_autoadd_page_settings(
     SseDeserializer deserializer,
   );
+
+  @protected
+  PdfSettings sse_decode_box_autoadd_pdf_settings(SseDeserializer deserializer);
 
   @protected
   TextEdit sse_decode_box_autoadd_text_edit(SseDeserializer deserializer);
@@ -235,6 +250,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PageSnapshot sse_decode_page_snapshot(SseDeserializer deserializer);
 
   @protected
+  PdfSettings sse_decode_pdf_settings(SseDeserializer deserializer);
+
+  @protected
   SpanStyle sse_decode_span_style(SseDeserializer deserializer);
 
   @protected
@@ -254,9 +272,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt sse_decode_usize(SseDeserializer deserializer);
-
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
   void
@@ -283,6 +298,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_bool(bool self, SseSerializer serializer);
+
+  @protected
   void sse_encode_box_autoadd_font_files(
     FontFiles self,
     SseSerializer serializer,
@@ -291,6 +309,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_page_settings(
     PageSettings self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_pdf_settings(
+    PdfSettings self,
     SseSerializer serializer,
   );
 
@@ -385,6 +409,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_page_snapshot(PageSnapshot self, SseSerializer serializer);
 
   @protected
+  void sse_encode_pdf_settings(PdfSettings self, SseSerializer serializer);
+
+  @protected
   void sse_encode_span_style(SpanStyle self, SseSerializer serializer);
 
   @protected
@@ -404,9 +431,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
 }
 
 // Section: wire_class

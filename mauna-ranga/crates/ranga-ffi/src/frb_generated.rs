@@ -421,6 +421,7 @@ fn wire__crate__api__export__export_pdf_impl(
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<DocumentHandle>,
             >>::sse_decode(&mut deserializer);
             let api_fonts = <crate::api::export::FontFiles>::sse_decode(&mut deserializer);
+            let api_settings = <crate::api::export::PdfSettings>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, String>(
@@ -444,8 +445,12 @@ fn wire__crate__api__export__export_pdf_impl(
                             }
                         }
                         let api_handle_guard = api_handle_guard.unwrap();
-                        let output_ok =
-                            crate::api::export::export_pdf(&*api_handle_guard, api_fonts).await?;
+                        let output_ok = crate::api::export::export_pdf(
+                            &*api_handle_guard,
+                            api_fonts,
+                            api_settings,
+                        )
+                        .await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -627,6 +632,13 @@ impl SseDecode for String {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut inner = <Vec<u8>>::sse_decode(deserializer);
         return String::from_utf8(inner).unwrap();
+    }
+}
+
+impl SseDecode for bool {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u8().unwrap() != 0
     }
 }
 
@@ -886,6 +898,20 @@ impl SseDecode for crate::api::document::PageSnapshot {
     }
 }
 
+impl SseDecode for crate::api::export::PdfSettings {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_titlePage = <bool>::sse_decode(deserializer);
+        let mut var_pageNumbers = <bool>::sse_decode(deserializer);
+        let mut var_watermark = <String>::sse_decode(deserializer);
+        return crate::api::export::PdfSettings {
+            title_page: var_titlePage,
+            page_numbers: var_pageNumbers,
+            watermark: var_watermark,
+        };
+    }
+}
+
 impl SseDecode for crate::api::document::SpanStyle {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -953,13 +979,6 @@ impl SseDecode for usize {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
-    }
-}
-
-impl SseDecode for bool {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_u8().unwrap() != 0
     }
 }
 
@@ -1223,6 +1242,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::document::PageSnapshot>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::export::PdfSettings {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.title_page.into_into_dart().into_dart(),
+            self.page_numbers.into_into_dart().into_dart(),
+            self.watermark.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::export::PdfSettings
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::export::PdfSettings>
+    for crate::api::export::PdfSettings
+{
+    fn into_into_dart(self) -> crate::api::export::PdfSettings {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::document::SpanStyle {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -1314,6 +1355,13 @@ impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<u8>>::sse_encode(self.into_bytes(), serializer);
+    }
+}
+
+impl SseEncode for bool {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_u8(self as _).unwrap();
     }
 }
 
@@ -1511,6 +1559,15 @@ impl SseEncode for crate::api::document::PageSnapshot {
     }
 }
 
+impl SseEncode for crate::api::export::PdfSettings {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.title_page, serializer);
+        <bool>::sse_encode(self.page_numbers, serializer);
+        <String>::sse_encode(self.watermark, serializer);
+    }
+}
+
 impl SseEncode for crate::api::document::SpanStyle {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1575,13 +1632,6 @@ impl SseEncode for usize {
             .cursor
             .write_u64::<NativeEndian>(self as _)
             .unwrap();
-    }
-}
-
-impl SseEncode for bool {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_u8(self as _).unwrap();
     }
 }
 

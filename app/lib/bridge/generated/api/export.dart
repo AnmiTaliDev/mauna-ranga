@@ -10,8 +10,12 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 Future<Uint8List> exportPdf({
   required DocumentHandle handle,
   required FontFiles fonts,
-}) =>
-    RustLib.instance.api.crateApiExportExportPdf(handle: handle, fonts: fonts);
+  required PdfSettings settings,
+}) => RustLib.instance.api.crateApiExportExportPdf(
+  handle: handle,
+  fonts: fonts,
+  settings: settings,
+);
 
 Future<String> exportFdx({required DocumentHandle handle}) =>
     RustLib.instance.api.crateApiExportExportFdx(handle: handle);
@@ -42,4 +46,29 @@ class FontFiles {
           bold == other.bold &&
           italic == other.italic &&
           boldItalic == other.boldItalic;
+}
+
+class PdfSettings {
+  final bool titlePage;
+  final bool pageNumbers;
+  final String watermark;
+
+  const PdfSettings({
+    required this.titlePage,
+    required this.pageNumbers,
+    required this.watermark,
+  });
+
+  @override
+  int get hashCode =>
+      titlePage.hashCode ^ pageNumbers.hashCode ^ watermark.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PdfSettings &&
+          runtimeType == other.runtimeType &&
+          titlePage == other.titlePage &&
+          pageNumbers == other.pageNumbers &&
+          watermark == other.watermark;
 }

@@ -1,8 +1,8 @@
 use std::fmt;
 
 use printpdf::{
-    FontId, Line, LinePoint, Op, ParsedFont, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions,
-    Point, Pt, TextItem,
+    Color, FontId, Greyscale, Line, LinePoint, Op, ParsedFont, PdfDocument, PdfFontHandle, PdfPage,
+    PdfSaveOptions, Point, Pt, TextItem, TextMatrix,
 };
 use ranga_core::{Document, ElementKind, Run, TitleEntry, plain_text};
 use ranga_layout::{Align, Column, Page, PageConfig};
@@ -12,6 +12,30 @@ const UNDERLINE_OFFSET_PT: f32 = 1.5;
 const UNDERLINE_THICKNESS_PT: f32 = 0.5;
 const CENTERED_TITLE_KEYS: [&str; 5] = ["title", "credit", "author", "authors", "source"];
 const CORNER_TITLE_KEYS: [&str; 2] = ["draft date", "contact"];
+const WATERMARK_ANGLE_DEGREES: f32 = 45.0;
+const WATERMARK_MAX_SIZE_PT: f32 = 72.0;
+const WATERMARK_MIN_SIZE_PT: f32 = 12.0;
+const WATERMARK_SPAN: f32 = 0.7;
+const WATERMARK_GREY: f32 = 0.85;
+const COURIER_ADVANCE_EM: f32 = 0.6;
+const WATERMARK_BASELINE_EM: f32 = 0.35;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PdfOptions {
+    pub title_page: bool,
+    pub page_numbers: bool,
+    pub watermark: Option<String>,
+}
+
+impl Default for PdfOptions {
+    fn default() -> Self {
+        PdfOptions {
+            title_page: true,
+            page_numbers: true,
+            watermark: None,
+        }
+    }
+}
 
 pub struct PdfFonts<'a> {
     pub regular: &'a [u8],
@@ -163,6 +187,37 @@ impl Painter<'_> {
         self.text_at(x, y, &runs);
     }
 
+    fn watermark(&mut self, text: &str) {
+        let config = self.config;
+        let width = config.page_width * POINTS_PER_INCH;
+        let height = config.page_height * POINTS_PER_INCH;
+        let count = text.chars().count() as f32;
+        let diagonal = (width * width + height * height).sqrt();
+        let size = (diagonal * WATERMARK_SPAN / (count * COURIER_ADVANCE_EM))
+            .clamp(WATERMARK_MIN_SIZE_PT, WATERMARK_MAX_SIZE_PT);
+        let length = count * COURIER_ADVANCE_EM * size;
+        let (sin, cos) = WATERMARK_ANGLE_DEGREES.to_radians().sin_cos();
+        let x = width / 2.0 - cos * length / 2.0 + sin * WATERMARK_BASELINE_EM * size;
+        let y = height / 2.0 - sin * length / 2.0 - cos * WATERMARK_BASELINE_EM * size;
+        self.ops.push(Op::SaveGraphicsState);
+        self.ops.push(Op::SetFillColor {
+            col: Color::Greyscale(Greyscale::new(WATERMARK_GREY, None)),
+        });
+        self.ops.push(Op::StartTextSection);
+        self.ops.push(Op::SetTextMatrix {
+            matrix: TextMatrix::TranslateRotate(Pt(x), Pt(y), WATERMARK_ANGLE_DEGREES),
+        });
+        self.ops.push(Op::SetFont {
+            font: PdfFontHandle::External(self.fonts.regular.clone()),
+            size: Pt(size),
+        });
+        self.ops.push(Op::ShowText {
+            items: vec![TextItem::Text(text.to_string())],
+        });
+        self.ops.push(Op::EndTextSection);
+        self.ops.push(Op::RestoreGraphicsState);
+    }
+
     fn finish(&mut self) -> PdfPage {
         let config = self.config;
         PdfPage::new(
@@ -178,6 +233,7 @@ pub fn export_pdf(
     pages: &[Page],
     config: &PageConfig,
     fonts: &PdfFonts,
+    options: &PdfOptions,
 ) -> Result<Vec<u8>, ExportError> {
     let title = doc
         .title_page()
@@ -197,8 +253,17 @@ pub fn export_pdf(
         ops: Vec::new(),
     };
     let mut output = Vec::new();
+    let watermark = options
+        .watermark
+        .as_deref()
+        .filter(|text| !text.trim().is_empty());
 
-    if let Some(title_page) = doc.title_page() {
+    if options.title_page
+        && let Some(title_page) = doc.title_page()
+    {
+        if let Some(text) = watermark {
+            painter.watermark(text);
+        }
         let lines_per_page = config.lines_per_page();
         let block = |keys: &[&str]| -> Vec<Vec<Run>> {
             let mut lines: Vec<Vec<Run>> = Vec::new();
@@ -227,7 +292,10 @@ pub fn export_pdf(
     }
 
     for page in pages {
-        if page.number > 1 {
+        if let Some(text) = watermark {
+            painter.watermark(text);
+        }
+        if options.page_numbers && page.number > 1 {
             painter.page_number(page.number);
         }
         for (row, number) in scene_numbers(doc, page) {

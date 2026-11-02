@@ -2,12 +2,13 @@
 
 ## About
 
-Rust engine of Mauna Ranga, a Fountain screenplay editor. It parses Fountain, reparses edited parts of a document, paginates to the US screenplay format, counts words, pages and runtime, and exports PDF, Final Draft (FDX), HTML and plain text. It has no user interface.
+Rust engine of Mauna Ranga, a Fountain screenplay editor. It parses Fountain, reparses edited parts of a document, paginates to the US screenplay format, counts words, pages and runtime, and exports PDF, Final Draft (FDX), HTML and plain text, and imports FDX. It has no user interface.
 
 ## Dependencies
 
 - Rust 1.88 or newer (edition 2024)
 - `printpdf` 0.12 without default features, for PDF output
+- `quick-xml` 0.42, for FDX import in `ranga-import`
 - `flutter_rust_bridge` 2.13.0, only in `ranga_ffi`
 
 ## Build
@@ -26,11 +27,18 @@ cargo fmt --check
 | `ranga-core` | Document model, Fountain parser, incremental reparse, word count, outline |
 | `ranga-layout` | Pagination, page geometry, runtime estimate |
 | `ranga-export` | PDF and FDX export |
+| `ranga-import` | FDX to Fountain conversion |
 | `ranga_ffi` | API for the Flutter app, generated bindings in `app/lib/bridge/generated` |
 
 ## Text and HTML export
 
 The plain text export prints the paginated layout in monospace columns without styling. Pages are separated by a form feed character and pages after the first start with a page number line. The HTML export is a single file with inline CSS. Dialogue is grouped in `dialogue-block` containers and dual dialogue pair is wrapped in a `dual` container.
+
+## FDX import
+
+`import_fdx` converts a Final Draft file to Fountain text. Scene headings keep their `Number`, and a heading without a scene prefix gets a leading `.`. Action lines that would be read as another element (all capitals, scene prefixes, marker characters) get a leading `!`. Character names with lowercase letters get a leading `@`, transitions that do not end with `TO:` get a leading `>`. Centered action becomes `> text <`, `StartsNewPage` becomes `===`, bold, italic and underline styles become `**`, `*` and `_`. The second character of a `DualDialogue` gets `^`.
+
+The title page has no keys in FDX. The first centered paragraph becomes `Title`, further centered paragraphs become `Author`, and left aligned paragraphs become `Contact`. Other element types, revisions, notes and formatting that Fountain cannot express are dropped.
 
 ## Parser
 

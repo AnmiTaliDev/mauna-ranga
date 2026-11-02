@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -343750427;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1463200512;
 
 // Section: executor
 
@@ -565,6 +565,42 @@ fn wire__crate__api__export__export_text_impl(
                         }
                         let api_handle_guard = api_handle_guard.unwrap();
                         let output_ok = crate::api::export::export_text(&*api_handle_guard).await?;
+                        std::result::Result::Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__import__import_fdx_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "import_fdx",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_xml = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::api::import::import_fdx(api_xml).await?;
                         std::result::Result::Ok(output_ok)
                     })()
                     .await,
@@ -1111,8 +1147,9 @@ fn pde_ffi_dispatcher_primary_impl(
         8 => wire__crate__api__export__export_html_impl(port, ptr, rust_vec_len, data_len),
         9 => wire__crate__api__export__export_pdf_impl(port, ptr, rust_vec_len, data_len),
         10 => wire__crate__api__export__export_text_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__document__paginate_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__import__import_fdx_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__init_app_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__document__paginate_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1129,7 +1166,7 @@ fn pde_ffi_dispatcher_sync_impl(
         3 => wire__crate__api__document__document_character_stats_impl(ptr, rust_vec_len, data_len),
         4 => wire__crate__api__document__document_outline_impl(ptr, rust_vec_len, data_len),
         5 => wire__crate__api__document__document_snapshot_impl(ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__document__word_count_impl(ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__document__word_count_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

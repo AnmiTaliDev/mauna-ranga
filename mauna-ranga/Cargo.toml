@@ -4,6 +4,7 @@ members = [
     "crates/ranga-core",
     "crates/ranga-layout",
     "crates/ranga-export",
+    "crates/ranga-import",
     "crates/ranga-ffi",
 ]
 
@@ -18,5 +19,7 @@ repository = "https://github.com/AnmiTaliDev/mauna-ranga"
 ranga-core = { path = "crates/ranga-core" }
 ranga-layout = { path = "crates/ranga-layout" }
 ranga-export = { path = "crates/ranga-export" }
+ranga-import = { path = "crates/ranga-import" }
+quick-xml = "0.42.0"
 printpdf = { version = "0.12.8", default-features = false }
 flutter_rust_bridge = "=2.13.0"

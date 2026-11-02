@@ -971,6 +971,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quick-xml"
+version = "0.42.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41b1177fdf999d2321d3fb46ff47159d9c1fb9ad66a4879f8c50a0b504615e9b"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1016,6 +1025,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ranga-import"
+version = "0.1.0"
+dependencies = [
+ "quick-xml",
+ "ranga-core",
+ "ranga-export",
+]
+
+[[package]]
 name = "ranga-layout"
 version = "0.1.0"
 dependencies = [
@@ -1029,6 +1047,7 @@ dependencies = [
  "flutter_rust_bridge",
  "ranga-core",
  "ranga-export",
+ "ranga-import",
  "ranga-layout",
 ]
 

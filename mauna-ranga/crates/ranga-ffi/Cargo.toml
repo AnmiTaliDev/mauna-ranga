@@ -14,6 +14,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 ranga-core.workspace = true
 ranga-layout.workspace = true
 ranga-export.workspace = true
+ranga-import.workspace = true
 flutter_rust_bridge.workspace = true
 
 [lints.rust]

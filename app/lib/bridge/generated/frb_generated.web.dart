@@ -8,6 +8,7 @@
 
 import 'api/document.dart';
 import 'api/export.dart';
+import 'api/import.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'frb_generated.dart';

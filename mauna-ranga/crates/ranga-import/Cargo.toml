@@ -1,0 +1,15 @@
+[package]
+name = "ranga-import"
+description = "Final Draft (FDX) import to Fountain text"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+quick-xml.workspace = true
+
+[dev-dependencies]
+ranga-core.workspace = true
+ranga-export.workspace = true

@@ -94,6 +94,8 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool get modified => text.text != _savedText;
+
   Future<void> exportPdf(String path, AppSettings settings) async {
     final String prefix = settings.font.filePrefix;
     final Uint8List bytes = await bridge.exportPdf(

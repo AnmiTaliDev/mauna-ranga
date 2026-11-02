@@ -11,6 +11,8 @@ import '../focus/focus_mode_controller.dart';
 import '../recovery/recovery_store.dart';
 import '../settings/app_settings.dart';
 import '../settings/settings_dialog.dart';
+import '../window/title_bar.dart';
+import '../window/window_controls.dart';
 import 'command_palette_commands.dart';
 import 'dialogs.dart';
 import 'editor_controller.dart';
@@ -68,6 +70,7 @@ class _EditorScreenState extends State<EditorScreen> {
   final FocusModeController _focus = FocusModeController();
   final FocusNode _documentFocus = FocusNode();
   String _lastText = '';
+  String _lastTitle = '';
 
   @override
   void initState() {
@@ -146,6 +149,21 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _onChanged() {
     setState(() {});
+    if (WindowControls.available) {
+      final String title = _windowTitle();
+      if (title != _lastTitle) {
+        _lastTitle = title;
+        WindowControls.setTitle(title);
+      }
+    }
+  }
+
+  String _windowTitle() {
+    final String? path = _editor.path;
+    final String name = path == null
+        ? untitledName
+        : path.split(Platform.pathSeparator).last;
+    return _editor.modified ? '$name \u2022' : name;
   }
 
   void _onTextChanged() {
@@ -458,6 +476,8 @@ class _EditorScreenState extends State<EditorScreen> {
               children: <Widget>[
                 Column(
                   children: <Widget>[
+                    if (WindowControls.available && !_focus.focusMode)
+                      TitleBar(title: _windowTitle(), dimmed: dimmed),
                     MaunaToolbar(
                       hidden: _focus.focusMode,
                       dimmed: dimmed,
@@ -571,6 +591,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     ),
                   ],
                 ),
+                if (WindowControls.available) const ResizeHandles(),
                 if (_focus.focusMode)
                   Positioned(
                     top: theme.spacing.xs,

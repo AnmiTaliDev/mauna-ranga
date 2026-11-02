@@ -50,7 +50,7 @@ Scene numbers written as `#n#` are printed on both sides of the heading. A dual 
 
 Known limitations:
 
-- Action and dialogue break at line boundaries with at least two lines on each side, not at sentence boundaries.
+- Action and dialogue break at line boundaries with at least two lines on each side. The break is placed after the last line that ends with `.`, `!`, `?` or `…` when there is one. A line that ends with an abbreviation such as `Mr.` counts as a sentence end.
 - A dialogue block that continues on the next page gets `(MORE)` and `CHARACTER (CONT'D)`. Dialogue longer than one page is split several times.
 
 ## FDX

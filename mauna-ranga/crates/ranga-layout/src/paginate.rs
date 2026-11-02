@@ -1,6 +1,6 @@
 use std::ops::Range;
 
-use ranga_core::{Document, Element, ElementKind, Run};
+use ranga_core::{Document, Element, ElementKind, Run, plain_text};
 
 use crate::config::{Column, DualColumns, PageConfig};
 use crate::wrap::{WrapOptions, wrap};
@@ -326,6 +326,20 @@ fn lay_out(
         .collect()
 }
 
+fn ends_sentence(line: &Line) -> bool {
+    plain_text(&line.runs)
+        .trim_end()
+        .trim_end_matches(['"', '\'', ')', '\u{201d}', '\u{2019}'])
+        .ends_with(['.', '!', '?', '\u{2026}'])
+}
+
+fn sentence_break(lines: &[Line], max_take: usize) -> usize {
+    (2..=max_take)
+        .rev()
+        .find(|&take| ends_sentence(&lines[take - 1]))
+        .unwrap_or(max_take)
+}
+
 fn continued_header(lines: &[Line], extension: Option<&str>, config: &PageConfig) -> Vec<Run> {
     let mut runs = lines
         .first()
@@ -459,7 +473,7 @@ impl Pager {
             let take = if left <= available {
                 left
             } else if available >= 2 && left - available >= 2 {
-                available
+                sentence_break(&lines[next..], available)
             } else if !self.is_empty() {
                 self.finish_page();
                 continue;
@@ -516,7 +530,7 @@ impl Pager {
             let take = if heading.len() + left <= available {
                 left
             } else if available >= reserved + 2 {
-                available - reserved
+                sentence_break(&content[next..], available - reserved)
             } else if !self.is_empty() {
                 self.finish_page();
                 continue;

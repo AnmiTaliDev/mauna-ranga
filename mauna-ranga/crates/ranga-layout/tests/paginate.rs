@@ -157,3 +157,27 @@ fn caret_without_preceding_dialogue_stays_in_one_column() {
         .expect("line");
     assert_eq!(brick.column, config.character);
 }
+
+#[test]
+fn action_breaks_after_a_sentence_when_possible() {
+    let mut source = filler(25);
+    source.push_str("The first sentence ends here.\nThis one keeps going\nThe second sentence ends here.\nAnd this one\nkeeps going\nfor a while\nand ends.\n");
+    let doc = parse_full(&source);
+    let pages = paginate(&doc, &PageConfig::default());
+    assert_eq!(pages.len(), 2);
+    assert_eq!(
+        text(&pages[0].lines.last().expect("line").runs),
+        "The second sentence ends here."
+    );
+    assert_eq!(text(&pages[1].lines[0].runs), "And this one");
+}
+
+#[test]
+fn action_breaks_at_a_line_when_no_sentence_ends() {
+    let mut source = filler(25);
+    source.push_str("one\ntwo\nthree\nfour\nfive\nsix\nseven\n");
+    let doc = parse_full(&source);
+    let pages = paginate(&doc, &PageConfig::default());
+    assert_eq!(pages.len(), 2);
+    assert_eq!(text(&pages[0].lines.last().expect("line").runs), "four");
+}

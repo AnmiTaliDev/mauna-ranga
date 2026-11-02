@@ -4,7 +4,7 @@ use printpdf::{
     FontId, Line, LinePoint, Op, ParsedFont, PdfDocument, PdfFontHandle, PdfPage, PdfSaveOptions,
     Point, Pt, TextItem,
 };
-use ranga_core::{Document, Run, TitleEntry, plain_text};
+use ranga_core::{Document, ElementKind, Run, TitleEntry, plain_text};
 use ranga_layout::{Align, Column, Page, PageConfig};
 
 const POINTS_PER_INCH: f32 = 72.0;
@@ -73,9 +73,28 @@ impl Painter<'_> {
             Align::Right => right - width,
             Align::Center => (left + right - width) / 2.0,
         };
-        let y = (config.page_height - config.top_margin) * POINTS_PER_INCH
-            - (row + 1) as f32 * config.line_height_pt();
-        self.text_at(x, y, runs);
+        self.text_at(x, self.row_y(row), runs);
+    }
+
+    fn row_y(&self, row: u32) -> f32 {
+        let config = self.config;
+        (config.page_height - config.top_margin) * POINTS_PER_INCH
+            - (row + 1) as f32 * config.line_height_pt()
+    }
+
+    fn scene_number(&mut self, row: u32, number: &str) {
+        let config = self.config;
+        let runs = [Run {
+            text: number.to_string(),
+            ..Run::default()
+        }];
+        let width = number.chars().count() as f32 * config.char_width_pt();
+        let gap = config.scene_number_gap * POINTS_PER_INCH;
+        let y = self.row_y(row);
+        let left = config.action.left * POINTS_PER_INCH - gap - width;
+        let right = config.action.right * POINTS_PER_INCH + gap;
+        self.text_at(left, y, &runs);
+        self.text_at(right, y, &runs);
     }
 
     fn text_at(&mut self, x: f32, y: f32, runs: &[Run]) {
@@ -211,6 +230,9 @@ pub fn export_pdf(
         if page.number > 1 {
             painter.page_number(page.number);
         }
+        for (row, number) in scene_numbers(doc, page) {
+            painter.scene_number(row, number);
+        }
         for line in &page.lines {
             painter.text_line(line.row, line.column, line.align, &line.runs);
         }
@@ -221,6 +243,23 @@ pub fn export_pdf(
         .with_pages(output)
         .save(&PdfSaveOptions::default(), &mut Vec::new());
     Ok(bytes)
+}
+
+fn scene_numbers<'a>(doc: &'a Document, page: &Page) -> Vec<(u32, &'a str)> {
+    let mut numbers = Vec::new();
+    let mut previous = None;
+    for line in &page.lines {
+        if line.element != previous
+            && let Some(index) = line.element
+            && let ElementKind::SceneHeading {
+                number: Some(number),
+            } = &doc.elements()[index].kind
+        {
+            numbers.push((line.row, number.as_str()));
+        }
+        previous = line.element;
+    }
+    numbers
 }
 
 fn add_font(
@@ -239,4 +278,24 @@ fn entry_text(doc: &Document, entry: &TitleEntry) -> String {
         .map(|value| plain_text(&value.runs(doc.source())))
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::scene_numbers;
+    use ranga_core::parse_full;
+    use ranga_layout::{PageConfig, paginate};
+
+    #[test]
+    fn scene_numbers_come_from_headings_with_explicit_numbers() {
+        let doc = parse_full(
+            "INT. ROOM - DAY #1#\n\nText.\n\nEXT. STREET - NIGHT\n\nText.\n\nINT. HALL - DAY #2A#\n\nText.\n",
+        );
+        let pages = paginate(&doc, &PageConfig::default());
+        let numbers: Vec<&str> = scene_numbers(&doc, &pages[0])
+            .into_iter()
+            .map(|(_, number)| number)
+            .collect();
+        assert_eq!(numbers, ["1", "2A"]);
+    }
 }

@@ -9,7 +9,7 @@ pub struct Column {
 /// Column indents are the `ParagraphSpec` values of the Final Draft template used by the
 /// sample `.fdx` files published on fountain.io. Page size, margins and the 10 characters
 /// per inch / 6 lines per inch grid of 12 pt Courier follow the common US screenplay
-/// format. The top and bottom margins and the page number position are assumptions, not
+/// format. The top and bottom margins, the page number position and the scene number gap are assumptions, not
 /// values taken from a normative source.
 #[derive(Debug, Clone, PartialEq)]
 pub struct PageConfig {
@@ -18,6 +18,7 @@ pub struct PageConfig {
     pub top_margin: f32,
     pub bottom_margin: f32,
     pub page_number_top: f32,
+    pub scene_number_gap: f32,
     pub font_size: f32,
     pub chars_per_inch: f32,
     pub lines_per_inch: f32,
@@ -40,6 +41,7 @@ impl Default for PageConfig {
             top_margin: 1.0,
             bottom_margin: 1.0,
             page_number_top: 0.5,
+            scene_number_gap: 0.2,
             font_size: 12.0,
             chars_per_inch: 10.0,
             lines_per_inch: 6.0,

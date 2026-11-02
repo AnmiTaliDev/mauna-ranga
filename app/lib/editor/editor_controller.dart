@@ -116,6 +116,7 @@ class EditorController extends ChangeNotifier {
       settings: bridge.PdfSettings(
         titlePage: settings.pdfTitlePage,
         pageNumbers: settings.pdfPageNumbers,
+        notesPage: settings.pdfNotesPage,
         watermark: settings.pdfWatermark,
       ),
     );
@@ -152,6 +153,10 @@ class EditorController extends ChangeNotifier {
 
   Future<void> exportText(String path) async {
     await File(path).writeAsString(await bridge.exportText(handle: _handle!));
+  }
+
+  List<NoteItem> notes() {
+    return documentNotes(handle: _handle!);
   }
 
   List<CharacterStat> characterStats() {

@@ -52,6 +52,7 @@ class AppSettings {
     this.recentFiles = const <String>[],
     this.pdfTitlePage = true,
     this.pdfPageNumbers = true,
+    this.pdfNotesPage = false,
     this.pdfWatermark = '',
   });
 
@@ -63,6 +64,7 @@ class AppSettings {
     final Object? titlePage = json['pdfTitlePage'];
     final Object? pageNumbers = json['pdfPageNumbers'];
     final Object? watermark = json['pdfWatermark'];
+    final Object? notesPage = json['pdfNotesPage'];
     return AppSettings(
       preset: _byName(ThemePreset.values, json['theme'], defaults.preset),
       accent: _byName(AccentChoice.values, json['accent'], defaults.accent),
@@ -78,6 +80,7 @@ class AppSettings {
       pdfPageNumbers: pageNumbers is bool
           ? pageNumbers
           : defaults.pdfPageNumbers,
+      pdfNotesPage: notesPage is bool ? notesPage : defaults.pdfNotesPage,
       pdfWatermark: watermark is String ? watermark : defaults.pdfWatermark,
     );
   }
@@ -98,6 +101,8 @@ class AppSettings {
 
   final bool pdfPageNumbers;
 
+  final bool pdfNotesPage;
+
   final String pdfWatermark;
 
   AppSettings copyWith({
@@ -109,6 +114,7 @@ class AppSettings {
     List<String>? recentFiles,
     bool? pdfTitlePage,
     bool? pdfPageNumbers,
+    bool? pdfNotesPage,
     String? pdfWatermark,
   }) {
     return AppSettings(
@@ -120,6 +126,7 @@ class AppSettings {
       recentFiles: recentFiles ?? this.recentFiles,
       pdfTitlePage: pdfTitlePage ?? this.pdfTitlePage,
       pdfPageNumbers: pdfPageNumbers ?? this.pdfPageNumbers,
+      pdfNotesPage: pdfNotesPage ?? this.pdfNotesPage,
       pdfWatermark: pdfWatermark ?? this.pdfWatermark,
     );
   }
@@ -149,6 +156,7 @@ class AppSettings {
       'recentFiles': recentFiles,
       'pdfTitlePage': pdfTitlePage,
       'pdfPageNumbers': pdfPageNumbers,
+      'pdfNotesPage': pdfNotesPage,
       'pdfWatermark': pdfWatermark,
     };
   }

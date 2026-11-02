@@ -53,7 +53,7 @@ A path passed on the command line is opened at start.
 
 Tab completes only on a line that follows a blank line and holds no lowercase letters, or starts with a scene prefix such as `INT.`. Candidates come from the character names and scene locations already in the document, most frequent first. Pressing Tab again cycles through the matches.
 
-Find and replace ignores case and has a whole word switch, so replacing `ST` with `STEEL` leaves `STELLA` alone. Replace all renames a character in the whole text. Statistics lists the speeches and dialogue words of every character.
+Find and replace ignores case and has a whole word switch, so replacing `ST` with `STEEL` leaves `STELLA` alone. Replace all renames a character in the whole text. Statistics lists the speeches and dialogue words of every character. Notes lists every `[[note]]` of the document with its scene, and choosing one moves the caret there.
 
 Moving a scene swaps it with the neighbouring scene. A scene does not move across a section heading.
 
@@ -73,7 +73,7 @@ Settings are stored in `$XDG_CONFIG_HOME/mauna-ranga/settings.json` (`~/.config/
 - Document font: Courier Prime or JetBrains Mono. The font is used in the editor and in PDF export. Courier Prime has no Cyrillic glyphs, so documents in Russian need JetBrains Mono.
 - Screen minutes per page for the runtime estimate
 - Dimming of the panels while typing
-- PDF export: title page on or off, page numbers on or off, watermark text
+- PDF export: title page on or off, page numbers on or off, a notes page on or off, watermark text
 - The list of recent files
 
 ## Editor highlighting

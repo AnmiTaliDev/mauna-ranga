@@ -219,6 +219,15 @@ class _DocumentPanel extends StatelessWidget {
           ),
         ),
         _Group(
+          label: 'PDF notes page',
+          description: 'Add a last page that lists the notes of the document.',
+          child: _OnOff(
+            value: settings.pdfNotesPage,
+            onChanged: (bool value) =>
+                onChanged(settings.copyWith(pdfNotesPage: value)),
+          ),
+        ),
+        _Group(
           label: 'PDF watermark',
           description: 'Diagonal text on every page. Leave empty for none.',
           child: _WatermarkField(

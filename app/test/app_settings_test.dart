@@ -62,6 +62,13 @@ void main() {
     expect(defaults.pdfTitlePage, isTrue);
     expect(defaults.pdfPageNumbers, isTrue);
     expect(defaults.pdfWatermark, '');
+    expect(defaults.pdfNotesPage, isFalse);
+    expect(
+      AppSettings.fromJson(
+        const AppSettings(pdfNotesPage: true).toJson(),
+      ).pdfNotesPage,
+      isTrue,
+    );
     final AppSettings loaded = AppSettings.fromJson(
       const AppSettings(
         pdfTitlePage: false,

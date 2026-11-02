@@ -17,6 +17,7 @@ import 'command_palette_commands.dart';
 import 'dialogs.dart';
 import 'editor_controller.dart';
 import 'find_dialog.dart';
+import 'notes_dialog.dart';
 import 'stats_dialog.dart';
 import 'toolbar_menu.dart';
 
@@ -387,6 +388,17 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _moveSceneDown() => _editor.moveCurrentScene(1);
 
+  Future<void> _openNotes() async {
+    final int? offset = await showMaunaDialog<int>(
+      context: context,
+      builder: (BuildContext context) => NotesDialog(notes: _editor.notes()),
+    );
+    if (offset != null) {
+      _editor.text.selection = TextSelection.collapsed(offset: offset);
+    }
+    _documentFocus.requestFocus();
+  }
+
   Future<void> _openStats() async {
     await showMaunaDialog<void>(
       context: context,
@@ -420,6 +432,7 @@ class _EditorScreenState extends State<EditorScreen> {
           goTo: _goTo,
           find: _openFind,
           statistics: _openStats,
+          notes: _openNotes,
           moveSceneUp: _moveSceneUp,
           moveSceneDown: _moveSceneDown,
           open: _open,
@@ -567,6 +580,7 @@ class _EditorScreenState extends State<EditorScreen> {
                               shortcut: 'Ctrl+F',
                             ),
                             MenuEntry('Statistics', _openStats),
+                            MenuEntry('Notes', _openNotes),
                             MenuEntry(
                               'Move scene up',
                               _moveSceneUp,

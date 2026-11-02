@@ -7,7 +7,7 @@ import 'package:mauna_ranga/settings/app_settings.dart';
 
 import 'rust_library.dart';
 
-const String script = 'Title: Test\n\nINT. ROOM - DAY\n\nText.\n';
+const String script = 'Title: Test\n\nINT. ROOM - DAY\n\nText [[a note]].\n';
 
 int pageCount(List<int> bytes) {
   final String text = String.fromCharCodes(bytes);
@@ -39,6 +39,11 @@ void main() {
       '${dir.path}/marked.pdf',
       const AppSettings(pdfWatermark: 'CONFIDENTIAL'),
     );
+    await editor.exportPdf(
+      '${dir.path}/notes.pdf',
+      const AppSettings(pdfNotesPage: true),
+    );
+    final List<int> withNotes = File('${dir.path}/notes.pdf').readAsBytesSync();
     final List<int> byDefault = File(
       '${dir.path}/default.pdf',
     ).readAsBytesSync();
@@ -46,6 +51,7 @@ void main() {
     final List<int> marked = File('${dir.path}/marked.pdf').readAsBytesSync();
     expect(pageCount(byDefault), 2);
     expect(pageCount(plain), 1);
+    expect(pageCount(withNotes), 3);
     expect(marked.length, greaterThan(byDefault.length + 50));
     editor.dispose();
   });

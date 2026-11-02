@@ -9,6 +9,7 @@ List<MaunaCommand> editorCommands({
   required ValueChanged<int> goTo,
   required VoidCallback find,
   required VoidCallback statistics,
+  required VoidCallback notes,
   required VoidCallback moveSceneUp,
   required VoidCallback moveSceneDown,
   required VoidCallback open,
@@ -57,6 +58,7 @@ List<MaunaCommand> editorCommands({
     MaunaCommand(label: 'Open settings', onSelected: openSettings),
     MaunaCommand(label: 'Find and replace', onSelected: find),
     MaunaCommand(label: 'Show statistics', onSelected: statistics),
+    MaunaCommand(label: 'Show notes', onSelected: notes),
     MaunaCommand(label: 'Move scene up', onSelected: moveSceneUp),
     MaunaCommand(label: 'Move scene down', onSelected: moveSceneDown),
     for (int i = 0; i < outline.length; i++)

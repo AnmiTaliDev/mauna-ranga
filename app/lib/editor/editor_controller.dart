@@ -122,6 +122,10 @@ class EditorController extends ChangeNotifier {
     return current;
   }
 
+  List<CharacterStat> characterStats() {
+    return documentCharacterStats(handle: _handle!);
+  }
+
   bool complete() {
     final TextSelection selection = text.selection;
     final String source = text.text;

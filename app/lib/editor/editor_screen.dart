@@ -15,6 +15,7 @@ import 'command_palette_commands.dart';
 import 'dialogs.dart';
 import 'editor_controller.dart';
 import 'find_dialog.dart';
+import 'stats_dialog.dart';
 import 'toolbar_menu.dart';
 
 const XTypeGroup fountainFiles = XTypeGroup(
@@ -295,6 +296,15 @@ class _EditorScreenState extends State<EditorScreen> {
 
   void _moveSceneDown() => _editor.moveCurrentScene(1);
 
+  Future<void> _openStats() async {
+    await showMaunaDialog<void>(
+      context: context,
+      builder: (BuildContext context) =>
+          StatsDialog(stats: _editor.characterStats()),
+    );
+    _documentFocus.requestFocus();
+  }
+
   Future<void> _openFind() async {
     final TextSelection selection = _editor.text.selection;
     final String selected = selection.isValid && !selection.isCollapsed
@@ -318,6 +328,7 @@ class _EditorScreenState extends State<EditorScreen> {
           outline: _editor.outline,
           goTo: _goTo,
           find: _openFind,
+          statistics: _openStats,
           moveSceneUp: _moveSceneUp,
           moveSceneDown: _moveSceneDown,
           open: _open,
@@ -451,6 +462,12 @@ class _EditorScreenState extends State<EditorScreen> {
                               _focus.toggleSidebar,
                               shortcut: 'Ctrl+B',
                             ),
+                            MenuEntry(
+                              'Find and replace',
+                              _openFind,
+                              shortcut: 'Ctrl+F',
+                            ),
+                            MenuEntry('Statistics', _openStats),
                             MenuEntry(
                               'Move scene up',
                               _moveSceneUp,

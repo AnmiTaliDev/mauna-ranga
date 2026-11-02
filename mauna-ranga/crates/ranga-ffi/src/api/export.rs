@@ -16,6 +16,7 @@ pub struct FontFiles {
 pub struct PdfSettings {
     pub title_page: bool,
     pub page_numbers: bool,
+    pub notes_page: bool,
     pub watermark: String,
 }
 
@@ -36,6 +37,7 @@ pub async fn export_pdf(
     let options = PdfOptions {
         title_page: settings.title_page,
         page_numbers: settings.page_numbers,
+        notes_page: settings.notes_page,
         watermark: Some(settings.watermark),
     };
     write_pdf(&document, &pages, &config, &fonts, &options).map_err(|error| error.to_string())

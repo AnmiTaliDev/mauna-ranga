@@ -1,5 +1,6 @@
 mod fdx;
 mod html;
+mod notes_page;
 mod pdf;
 mod runs;
 mod text;

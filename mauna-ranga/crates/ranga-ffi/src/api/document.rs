@@ -81,6 +81,12 @@ pub struct OutlineEntry {
     pub offset: u32,
 }
 
+pub struct NoteItem {
+    pub text: String,
+    pub offset: u32,
+    pub scene: Option<String>,
+}
+
 pub struct PageSettings {
     pub minutes_per_page: f32,
 }
@@ -154,6 +160,21 @@ pub fn document_outline(handle: &DocumentHandle) -> Result<Vec<OutlineEntry>, St
                 OutlineKind::Section { level } => level,
             },
             offset: cursor.unit_at(document.elements()[entry.element].range.start),
+        })
+        .collect())
+}
+
+#[frb(sync)]
+pub fn document_notes(handle: &DocumentHandle) -> Result<Vec<NoteItem>, String> {
+    let document = handle.current()?;
+    let mut cursor = Cursor::new(document.source());
+    Ok(document
+        .notes()
+        .into_iter()
+        .map(|note| NoteItem {
+            offset: cursor.unit_at(note.start),
+            text: note.text,
+            scene: note.scene,
         })
         .collect())
 }

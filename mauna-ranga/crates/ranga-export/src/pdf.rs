@@ -7,6 +7,8 @@ use printpdf::{
 use ranga_core::{Document, ElementKind, Run, TitleEntry, plain_text};
 use ranga_layout::{Align, Column, Page, PageConfig};
 
+use crate::notes_page::notes_lines;
+
 const POINTS_PER_INCH: f32 = 72.0;
 const UNDERLINE_OFFSET_PT: f32 = 1.5;
 const UNDERLINE_THICKNESS_PT: f32 = 0.5;
@@ -24,6 +26,7 @@ const WATERMARK_BASELINE_EM: f32 = 0.35;
 pub struct PdfOptions {
     pub title_page: bool,
     pub page_numbers: bool,
+    pub notes_page: bool,
     pub watermark: Option<String>,
 }
 
@@ -32,6 +35,7 @@ impl Default for PdfOptions {
         PdfOptions {
             title_page: true,
             page_numbers: true,
+            notes_page: false,
             watermark: None,
         }
     }
@@ -305,6 +309,28 @@ pub fn export_pdf(
             painter.text_line(line.row, line.column, line.align, &line.runs);
         }
         output.push(painter.finish());
+    }
+
+    if options.notes_page {
+        let lines = notes_lines(doc, config.columns_in(config.action));
+        let capacity = config.lines_per_page() as usize;
+        for (index, chunk) in lines.chunks(capacity.max(1)).enumerate() {
+            if let Some(text) = watermark {
+                painter.watermark(text);
+            }
+            let number = (pages.len() + index) as u32 + 1;
+            if options.page_numbers && number > 1 {
+                painter.page_number(number);
+            }
+            for (row, line) in chunk.iter().enumerate() {
+                let runs = [Run {
+                    text: line.clone(),
+                    ..Run::default()
+                }];
+                painter.text_line(row as u32, config.action, Align::Left, &runs);
+            }
+            output.push(painter.finish());
+        }
     }
 
     let bytes = pdf

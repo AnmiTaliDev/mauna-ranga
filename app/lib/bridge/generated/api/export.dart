@@ -57,17 +57,22 @@ class FontFiles {
 class PdfSettings {
   final bool titlePage;
   final bool pageNumbers;
+  final bool notesPage;
   final String watermark;
 
   const PdfSettings({
     required this.titlePage,
     required this.pageNumbers,
+    required this.notesPage,
     required this.watermark,
   });
 
   @override
   int get hashCode =>
-      titlePage.hashCode ^ pageNumbers.hashCode ^ watermark.hashCode;
+      titlePage.hashCode ^
+      pageNumbers.hashCode ^
+      notesPage.hashCode ^
+      watermark.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -76,5 +81,6 @@ class PdfSettings {
           runtimeType == other.runtimeType &&
           titlePage == other.titlePage &&
           pageNumbers == other.pageNumbers &&
+          notesPage == other.notesPage &&
           watermark == other.watermark;
 }

@@ -99,6 +99,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ElementSnapshot> dco_decode_list_element_snapshot(dynamic raw);
 
   @protected
+  List<NoteItem> dco_decode_list_note_item(dynamic raw);
+
+  @protected
   List<OutlineEntry> dco_decode_list_outline_entry(dynamic raw);
 
   @protected
@@ -109,6 +112,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<StyleSpan> dco_decode_list_style_span(dynamic raw);
+
+  @protected
+  NoteItem dco_decode_note_item(dynamic raw);
+
+  @protected
+  String? dco_decode_opt_String(dynamic raw);
 
   @protected
   int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
@@ -225,6 +234,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  List<NoteItem> sse_decode_list_note_item(SseDeserializer deserializer);
+
+  @protected
   List<OutlineEntry> sse_decode_list_outline_entry(
     SseDeserializer deserializer,
   );
@@ -239,6 +251,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<StyleSpan> sse_decode_list_style_span(SseDeserializer deserializer);
+
+  @protected
+  NoteItem sse_decode_note_item(SseDeserializer deserializer);
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
   int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
@@ -376,6 +394,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_list_note_item(List<NoteItem> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_outline_entry(
     List<OutlineEntry> self,
     SseSerializer serializer,
@@ -398,6 +419,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     List<StyleSpan> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_note_item(NoteItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);

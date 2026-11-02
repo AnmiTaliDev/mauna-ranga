@@ -23,6 +23,9 @@ DocumentSnapshot applyEdit({
 List<OutlineEntry> documentOutline({required DocumentHandle handle}) =>
     RustLib.instance.api.crateApiDocumentDocumentOutline(handle: handle);
 
+List<NoteItem> documentNotes({required DocumentHandle handle}) =>
+    RustLib.instance.api.crateApiDocumentDocumentNotes(handle: handle);
+
 int wordCount({required DocumentHandle handle}) =>
     RustLib.instance.api.crateApiDocumentWordCount(handle: handle);
 
@@ -172,6 +175,26 @@ enum ElementType {
   note,
   boneyard,
   lyric,
+}
+
+class NoteItem {
+  final String text;
+  final int offset;
+  final String? scene;
+
+  const NoteItem({required this.text, required this.offset, this.scene});
+
+  @override
+  int get hashCode => text.hashCode ^ offset.hashCode ^ scene.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NoteItem &&
+          runtimeType == other.runtimeType &&
+          text == other.text &&
+          offset == other.offset &&
+          scene == other.scene;
 }
 
 class OutlineEntry {

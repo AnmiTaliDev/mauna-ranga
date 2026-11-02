@@ -206,3 +206,33 @@ fn text_places_elements_in_their_columns() {
     );
     assert!(lines.iter().any(|line| line.trim() == "BRICK & STEEL"));
 }
+
+#[test]
+fn pdf_notes_page_is_added_only_when_asked_and_notes_exist() {
+    let with_notes = "INT. DEPOT - NIGHT\n\nRain [[check the sound]] falls.\n";
+    let export = |source: &str, notes_page: bool| {
+        let doc = parse_full(source);
+        let config = PageConfig::default();
+        let pages = paginate(&doc, &config);
+        let (regular, bold, italic, bold_italic) = (
+            font("CourierPrime-Regular.ttf"),
+            font("CourierPrime-Bold.ttf"),
+            font("CourierPrime-Italic.ttf"),
+            font("CourierPrime-BoldItalic.ttf"),
+        );
+        let fonts = PdfFonts {
+            regular: &regular,
+            bold: &bold,
+            italic: &italic,
+            bold_italic: &bold_italic,
+        };
+        let options = PdfOptions {
+            notes_page,
+            ..PdfOptions::default()
+        };
+        page_count(&export_pdf(&doc, &pages, &config, &fonts, &options).expect("pdf"))
+    };
+    assert_eq!(export(with_notes, false), 1);
+    assert_eq!(export(with_notes, true), 2);
+    assert_eq!(export("INT. DEPOT - NIGHT\n\nNo notes here.\n", true), 1);
+}

@@ -217,6 +217,17 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   }
 
+  Future<void> _importFdx() async {
+    final XFile? file = await openFile(
+      acceptedTypeGroups: const <XTypeGroup>[fdxFiles],
+      initialDirectory: _directory(),
+    );
+    _documentFocus.requestFocus();
+    if (file != null) {
+      await _run('Cannot import the file', () => _editor.importFdx(file.path));
+    }
+  }
+
   Future<void> _openPath(String path) async {
     final bool opened = await _run(
       'Cannot open the file',
@@ -357,6 +368,7 @@ class _EditorScreenState extends State<EditorScreen> {
           save: _save,
           saveAs: _saveAs,
           exportPdf: _exportPdf,
+          importFdx: _importFdx,
           exportFdx: _exportFdx,
           exportHtml: _exportHtml,
           exportText: _exportText,
@@ -467,6 +479,7 @@ class _EditorScreenState extends State<EditorScreen> {
                               shortcut: 'Ctrl+Shift+S',
                             ),
                             const MenuEntry.separator(),
+                            MenuEntry('Import FDX', _importFdx),
                             MenuEntry('Export to PDF', _exportPdf),
                             MenuEntry('Export to FDX', _exportFdx),
                             MenuEntry('Export to HTML', _exportHtml),

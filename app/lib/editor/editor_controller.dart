@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 
 import '../bridge/generated/api/document.dart';
 import '../bridge/generated/api/export.dart' as bridge;
+import '../bridge/generated/api/import.dart' as importer;
 import '../recovery/recovery_store.dart';
 import '../settings/app_settings.dart';
 import 'fountain_elements.dart';
@@ -125,6 +126,15 @@ class EditorController extends ChangeNotifier {
       }
     }
     return current;
+  }
+
+  Future<void> importFdx(String path) async {
+    final String fountain = await importer.importFdx(
+      xml: await File(path).readAsString(),
+    );
+    await load(fountain);
+    _savedText = '';
+    await _syncRecovery();
   }
 
   Future<void> exportHtml(String path) async {

@@ -9,7 +9,9 @@ import '../bridge/generated/api/document.dart';
 import '../bridge/generated/api/export.dart' as bridge;
 import '../settings/app_settings.dart';
 import 'fountain_elements.dart';
+import 'completion.dart';
 import 'fountain_text_controller.dart';
+import 'scene_order.dart';
 
 const Duration statsDelay = Duration(milliseconds: 300);
 
@@ -24,6 +26,7 @@ class EditorController extends ChangeNotifier {
   String _lastText = '';
   int _generation = 0;
   Timer? _statsTimer;
+  CompletionSession? _completion;
 
   String? path;
   List<OutlineEntry> outline = <OutlineEntry>[];
@@ -95,6 +98,64 @@ class EditorController extends ChangeNotifier {
       }
     }
     return current;
+  }
+
+  bool complete() {
+    final TextSelection selection = text.selection;
+    final String source = text.text;
+    if (!selection.isValid || !selection.isCollapsed) {
+      return false;
+    }
+    final int caret = selection.baseOffset;
+    if (caret == 0 || (caret < source.length && source[caret] != '\n')) {
+      return false;
+    }
+    final int lineStart = source.lastIndexOf('\n', caret - 1) + 1;
+    if (lineStart > 1 && source[lineStart - 2] != '\n') {
+      return false;
+    }
+    final String line = source.substring(lineStart, caret);
+    final CompletionSession? previous = _completion;
+    final List<String> matches;
+    final int index;
+    if (previous != null &&
+        previous.lineStart == lineStart &&
+        previous.matches[previous.index] == line) {
+      matches = previous.matches;
+      index = (previous.index + 1) % matches.length;
+    } else {
+      matches = completionMatches(
+        line,
+        completionCandidates(source, text.elements, lineStart),
+      );
+      if (matches.isEmpty) {
+        return false;
+      }
+      index = 0;
+    }
+    _completion = CompletionSession(lineStart, matches, index);
+    text.value = TextEditingValue(
+      text: source.replaceRange(lineStart, caret, matches[index]),
+      selection: TextSelection.collapsed(
+        offset: lineStart + matches[index].length,
+      ),
+    );
+    return true;
+  }
+
+  void moveCurrentScene(int direction) {
+    final int? index = currentOutlineIndex();
+    if (index == null) {
+      return;
+    }
+    final SceneMove? move = moveScene(text.text, outline, index, direction);
+    if (move == null) {
+      return;
+    }
+    text.value = TextEditingValue(
+      text: move.text,
+      selection: TextSelection.collapsed(offset: move.caret),
+    );
   }
 
   Future<Uint8List> _font(String file) async {

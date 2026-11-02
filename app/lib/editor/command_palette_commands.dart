@@ -7,6 +7,8 @@ import '../settings/app_settings.dart';
 List<MaunaCommand> editorCommands({
   required List<OutlineEntry> outline,
   required ValueChanged<int> goTo,
+  required VoidCallback moveSceneUp,
+  required VoidCallback moveSceneDown,
   required VoidCallback open,
   required VoidCallback save,
   required VoidCallback saveAs,
@@ -45,6 +47,8 @@ List<MaunaCommand> editorCommands({
         onSelected: () => changeSettings(settings.copyWith(font: font)),
       ),
     MaunaCommand(label: 'Open settings', onSelected: openSettings),
+    MaunaCommand(label: 'Move scene up', onSelected: moveSceneUp),
+    MaunaCommand(label: 'Move scene down', onSelected: moveSceneDown),
     for (int i = 0; i < outline.length; i++)
       MaunaCommand(
         label: 'Go to ${outline[i].title}',

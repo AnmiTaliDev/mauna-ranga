@@ -191,6 +191,22 @@ class _EditorScreenState extends State<EditorScreen> {
     }
   }
 
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    final bool plain =
+        !HardwareKeyboard.instance.isControlPressed &&
+        !HardwareKeyboard.instance.isAltPressed &&
+        !HardwareKeyboard.instance.isMetaPressed &&
+        !HardwareKeyboard.instance.isShiftPressed;
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.tab &&
+        plain &&
+        _documentFocus.hasFocus &&
+        _editor.complete()) {
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   void _toggleFocusMode() {
     _focus.toggleFocusMode();
     _documentFocus.requestFocus();
@@ -203,6 +219,10 @@ class _EditorScreenState extends State<EditorScreen> {
     _documentFocus.requestFocus();
   }
 
+  void _moveSceneUp() => _editor.moveCurrentScene(-1);
+
+  void _moveSceneDown() => _editor.moveCurrentScene(1);
+
   Future<void> _openPalette() async {
     await showMaunaPopup<void>(
       context: context,
@@ -210,6 +230,8 @@ class _EditorScreenState extends State<EditorScreen> {
         commands: editorCommands(
           outline: _editor.outline,
           goTo: _goTo,
+          moveSceneUp: _moveSceneUp,
+          moveSceneDown: _moveSceneDown,
           open: _open,
           save: _save,
           saveAs: _saveAs,
@@ -260,133 +282,153 @@ class _EditorScreenState extends State<EditorScreen> {
     final int? current = _editor.currentOutlineIndex();
     final String? path = _editor.path;
 
-    return CallbackShortcuts(
-      bindings: <ShortcutActivator, VoidCallback>{
-        const SingleActivator(LogicalKeyboardKey.keyK, control: true):
-            _openPalette,
-        const SingleActivator(LogicalKeyboardKey.keyB, control: true):
-            _focus.toggleSidebar,
-        const SingleActivator(LogicalKeyboardKey.comma, control: true):
-            _openSettings,
-        const SingleActivator(
-          LogicalKeyboardKey.keyF,
-          control: true,
-          shift: true,
-        ): _toggleFocusMode,
-        const SingleActivator(LogicalKeyboardKey.escape): _focus.exitFocusMode,
-        const SingleActivator(LogicalKeyboardKey.keyO, control: true): _open,
-        const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
-        const SingleActivator(
-          LogicalKeyboardKey.keyS,
-          control: true,
-          shift: true,
-        ): _saveAs,
-      },
-      child: MouseRegion(
-        onHover: _onPointerMoved,
-        child: ColoredBox(
-          color: theme.bgCanvas,
-          child: Stack(
-            children: <Widget>[
-              Column(
-                children: <Widget>[
-                  MaunaToolbar(
-                    hidden: _focus.focusMode,
-                    dimmed: dimmed,
-                    leading: <Widget>[
-                      ToolbarMenu(
-                        label: 'File',
-                        entries: <MenuEntry>[
-                          MenuEntry('Open', _open, shortcut: 'Ctrl+O'),
-                          MenuEntry('Save', _save, shortcut: 'Ctrl+S'),
-                          MenuEntry(
-                            'Save as',
-                            _saveAs,
-                            shortcut: 'Ctrl+Shift+S',
-                          ),
-                          const MenuEntry.separator(),
-                          MenuEntry('Export to PDF', _exportPdf),
-                          MenuEntry('Export to FDX', _exportFdx),
-                        ],
-                      ),
-                      ToolbarMenu(
-                        label: 'View',
-                        entries: <MenuEntry>[
-                          MenuEntry(
-                            'Commands',
-                            _openPalette,
-                            shortcut: 'Ctrl+K',
-                          ),
-                          MenuEntry(
-                            _focus.sidebarOpen
-                                ? 'Hide sidebar'
-                                : 'Show sidebar',
-                            _focus.toggleSidebar,
-                            shortcut: 'Ctrl+B',
-                          ),
-                          MenuEntry(
-                            'Enter focus mode',
-                            _toggleFocusMode,
-                            shortcut: 'Ctrl+Shift+F',
-                          ),
-                        ],
-                      ),
-                    ],
-                    trailing: <Widget>[
-                      MaunaToolbarChip(
-                        icon: MaunaGlyphs.settings(),
-                        label: 'Settings',
-                        onPressed: _openSettings,
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: <Widget>[
-                        MaunaSidebar(
-                          title: 'Scenes',
-                          items: <String>[
-                            for (final OutlineEntry entry in outline)
-                              entry.title,
+    return Focus(
+      canRequestFocus: false,
+      skipTraversal: true,
+      onKeyEvent: _onKey,
+      child: CallbackShortcuts(
+        bindings: <ShortcutActivator, VoidCallback>{
+          const SingleActivator(LogicalKeyboardKey.keyK, control: true):
+              _openPalette,
+          const SingleActivator(LogicalKeyboardKey.keyB, control: true):
+              _focus.toggleSidebar,
+          const SingleActivator(LogicalKeyboardKey.comma, control: true):
+              _openSettings,
+          const SingleActivator(
+            LogicalKeyboardKey.keyF,
+            control: true,
+            shift: true,
+          ): _toggleFocusMode,
+          const SingleActivator(LogicalKeyboardKey.arrowUp, alt: true):
+              _moveSceneUp,
+          const SingleActivator(LogicalKeyboardKey.arrowDown, alt: true):
+              _moveSceneDown,
+          const SingleActivator(LogicalKeyboardKey.escape):
+              _focus.exitFocusMode,
+          const SingleActivator(LogicalKeyboardKey.keyO, control: true): _open,
+          const SingleActivator(LogicalKeyboardKey.keyS, control: true): _save,
+          const SingleActivator(
+            LogicalKeyboardKey.keyS,
+            control: true,
+            shift: true,
+          ): _saveAs,
+        },
+        child: MouseRegion(
+          onHover: _onPointerMoved,
+          child: ColoredBox(
+            color: theme.bgCanvas,
+            child: Stack(
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    MaunaToolbar(
+                      hidden: _focus.focusMode,
+                      dimmed: dimmed,
+                      leading: <Widget>[
+                        ToolbarMenu(
+                          label: 'File',
+                          entries: <MenuEntry>[
+                            MenuEntry('Open', _open, shortcut: 'Ctrl+O'),
+                            MenuEntry('Save', _save, shortcut: 'Ctrl+S'),
+                            MenuEntry(
+                              'Save as',
+                              _saveAs,
+                              shortcut: 'Ctrl+Shift+S',
+                            ),
+                            const MenuEntry.separator(),
+                            MenuEntry('Export to PDF', _exportPdf),
+                            MenuEntry('Export to FDX', _exportFdx),
                           ],
-                          selectedIndex: current,
-                          onSelected: _goTo,
-                          collapsed: _focus.sidebarCollapsed,
-                          dimmed: dimmed,
                         ),
-                        Expanded(
-                          child: MaunaDocumentCanvas(
-                            controller: _editor.text,
-                            focusNode: _documentFocus,
-                            placeholder: 'Start writing',
-                            autofocus: true,
-                          ),
+                        ToolbarMenu(
+                          label: 'View',
+                          entries: <MenuEntry>[
+                            MenuEntry(
+                              'Commands',
+                              _openPalette,
+                              shortcut: 'Ctrl+K',
+                            ),
+                            MenuEntry(
+                              _focus.sidebarOpen
+                                  ? 'Hide sidebar'
+                                  : 'Show sidebar',
+                              _focus.toggleSidebar,
+                              shortcut: 'Ctrl+B',
+                            ),
+                            MenuEntry(
+                              'Move scene up',
+                              _moveSceneUp,
+                              shortcut: 'Alt+Up',
+                            ),
+                            MenuEntry(
+                              'Move scene down',
+                              _moveSceneDown,
+                              shortcut: 'Alt+Down',
+                            ),
+                            MenuEntry(
+                              'Enter focus mode',
+                              _toggleFocusMode,
+                              shortcut: 'Ctrl+Shift+F',
+                            ),
+                          ],
+                        ),
+                      ],
+                      trailing: <Widget>[
+                        MaunaToolbarChip(
+                          icon: MaunaGlyphs.settings(),
+                          label: 'Settings',
+                          onPressed: _openSettings,
                         ),
                       ],
                     ),
-                  ),
-                  MaunaStatusBar(
-                    dimmed: dimmed,
-                    leading: _statusItems(),
-                    trailing: <String>[
-                      if (current != null)
-                        outline[current].title
-                      else if (path != null)
-                        path.split(Platform.pathSeparator).last,
-                    ],
-                  ),
-                ],
-              ),
-              if (_focus.focusMode)
-                Positioned(
-                  top: theme.spacing.xs,
-                  right: theme.spacing.xs,
-                  child: MaunaToolbarRestoreButton(
-                    onPressed: _focus.exitFocusMode,
-                  ),
+                    Expanded(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          MaunaSidebar(
+                            title: 'Scenes',
+                            items: <String>[
+                              for (final OutlineEntry entry in outline)
+                                entry.title,
+                            ],
+                            selectedIndex: current,
+                            onSelected: _goTo,
+                            collapsed: _focus.sidebarCollapsed,
+                            dimmed: dimmed,
+                          ),
+                          Expanded(
+                            child: MaunaDocumentCanvas(
+                              controller: _editor.text,
+                              focusNode: _documentFocus,
+                              placeholder: 'Start writing',
+                              autofocus: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    MaunaStatusBar(
+                      dimmed: dimmed,
+                      leading: _statusItems(),
+                      trailing: <String>[
+                        if (current != null)
+                          outline[current].title
+                        else if (path != null)
+                          path.split(Platform.pathSeparator).last,
+                      ],
+                    ),
+                  ],
                 ),
-            ],
+                if (_focus.focusMode)
+                  Positioned(
+                    top: theme.spacing.xs,
+                    right: theme.spacing.xs,
+                    child: MaunaToolbarRestoreButton(
+                      onPressed: _focus.exitFocusMode,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

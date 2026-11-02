@@ -1139,11 +1139,15 @@ impl SseDecode for crate::api::export::PdfSettings {
         let mut var_titlePage = <bool>::sse_decode(deserializer);
         let mut var_pageNumbers = <bool>::sse_decode(deserializer);
         let mut var_notesPage = <bool>::sse_decode(deserializer);
+        let mut var_notesTitle = <String>::sse_decode(deserializer);
+        let mut var_notesBeforeFirstScene = <String>::sse_decode(deserializer);
         let mut var_watermark = <String>::sse_decode(deserializer);
         return crate::api::export::PdfSettings {
             title_page: var_titlePage,
             page_numbers: var_pageNumbers,
             notes_page: var_notesPage,
+            notes_title: var_notesTitle,
+            notes_before_first_scene: var_notesBeforeFirstScene,
             watermark: var_watermark,
         };
     }
@@ -1511,6 +1515,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::export::PdfSettings {
             self.title_page.into_into_dart().into_dart(),
             self.page_numbers.into_into_dart().into_dart(),
             self.notes_page.into_into_dart().into_dart(),
+            self.notes_title.into_into_dart().into_dart(),
+            self.notes_before_first_scene.into_into_dart().into_dart(),
             self.watermark.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -1858,6 +1864,8 @@ impl SseEncode for crate::api::export::PdfSettings {
         <bool>::sse_encode(self.title_page, serializer);
         <bool>::sse_encode(self.page_numbers, serializer);
         <bool>::sse_encode(self.notes_page, serializer);
+        <String>::sse_encode(self.notes_title, serializer);
+        <String>::sse_encode(self.notes_before_first_scene, serializer);
         <String>::sse_encode(self.watermark, serializer);
     }
 }

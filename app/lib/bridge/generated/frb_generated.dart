@@ -890,13 +890,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PdfSettings dco_decode_pdf_settings(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return PdfSettings(
       titlePage: dco_decode_bool(arr[0]),
       pageNumbers: dco_decode_bool(arr[1]),
       notesPage: dco_decode_bool(arr[2]),
-      watermark: dco_decode_String(arr[3]),
+      notesTitle: dco_decode_String(arr[3]),
+      notesBeforeFirstScene: dco_decode_String(arr[4]),
+      watermark: dco_decode_String(arr[5]),
     );
   }
 
@@ -1294,11 +1296,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_titlePage = sse_decode_bool(deserializer);
     var var_pageNumbers = sse_decode_bool(deserializer);
     var var_notesPage = sse_decode_bool(deserializer);
+    var var_notesTitle = sse_decode_String(deserializer);
+    var var_notesBeforeFirstScene = sse_decode_String(deserializer);
     var var_watermark = sse_decode_String(deserializer);
     return PdfSettings(
       titlePage: var_titlePage,
       pageNumbers: var_pageNumbers,
       notesPage: var_notesPage,
+      notesTitle: var_notesTitle,
+      notesBeforeFirstScene: var_notesBeforeFirstScene,
       watermark: var_watermark,
     );
   }
@@ -1662,6 +1668,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self.titlePage, serializer);
     sse_encode_bool(self.pageNumbers, serializer);
     sse_encode_bool(self.notesPage, serializer);
+    sse_encode_String(self.notesTitle, serializer);
+    sse_encode_String(self.notesBeforeFirstScene, serializer);
     sse_encode_String(self.watermark, serializer);
   }
 

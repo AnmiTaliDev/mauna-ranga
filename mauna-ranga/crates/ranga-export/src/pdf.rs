@@ -27,6 +27,8 @@ pub struct PdfOptions {
     pub title_page: bool,
     pub page_numbers: bool,
     pub notes_page: bool,
+    pub notes_title: String,
+    pub notes_before_first_scene: String,
     pub watermark: Option<String>,
 }
 
@@ -36,6 +38,8 @@ impl Default for PdfOptions {
             title_page: true,
             page_numbers: true,
             notes_page: false,
+            notes_title: "NOTES".to_string(),
+            notes_before_first_scene: "Before the first scene".to_string(),
             watermark: None,
         }
     }
@@ -312,7 +316,12 @@ pub fn export_pdf(
     }
 
     if options.notes_page {
-        let lines = notes_lines(doc, config.columns_in(config.action));
+        let lines = notes_lines(
+            doc,
+            config.columns_in(config.action),
+            &options.notes_title,
+            &options.notes_before_first_scene,
+        );
         let capacity = config.lines_per_page() as usize;
         for (index, chunk) in lines.chunks(capacity.max(1)).enumerate() {
             if let Some(text) = watermark {

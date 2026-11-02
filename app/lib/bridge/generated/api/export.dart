@@ -58,12 +58,16 @@ class PdfSettings {
   final bool titlePage;
   final bool pageNumbers;
   final bool notesPage;
+  final String notesTitle;
+  final String notesBeforeFirstScene;
   final String watermark;
 
   const PdfSettings({
     required this.titlePage,
     required this.pageNumbers,
     required this.notesPage,
+    required this.notesTitle,
+    required this.notesBeforeFirstScene,
     required this.watermark,
   });
 
@@ -72,6 +76,8 @@ class PdfSettings {
       titlePage.hashCode ^
       pageNumbers.hashCode ^
       notesPage.hashCode ^
+      notesTitle.hashCode ^
+      notesBeforeFirstScene.hashCode ^
       watermark.hashCode;
 
   @override
@@ -82,5 +88,7 @@ class PdfSettings {
           titlePage == other.titlePage &&
           pageNumbers == other.pageNumbers &&
           notesPage == other.notesPage &&
+          notesTitle == other.notesTitle &&
+          notesBeforeFirstScene == other.notesBeforeFirstScene &&
           watermark == other.watermark;
 }

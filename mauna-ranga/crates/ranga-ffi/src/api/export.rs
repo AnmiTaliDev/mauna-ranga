@@ -17,6 +17,8 @@ pub struct PdfSettings {
     pub title_page: bool,
     pub page_numbers: bool,
     pub notes_page: bool,
+    pub notes_title: String,
+    pub notes_before_first_scene: String,
     pub watermark: String,
 }
 
@@ -38,6 +40,8 @@ pub async fn export_pdf(
         title_page: settings.title_page,
         page_numbers: settings.page_numbers,
         notes_page: settings.notes_page,
+        notes_title: settings.notes_title,
+        notes_before_first_scene: settings.notes_before_first_scene,
         watermark: Some(settings.watermark),
     };
     write_pdf(&document, &pages, &config, &fonts, &options).map_err(|error| error.to_string())

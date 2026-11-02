@@ -2,12 +2,17 @@ use ranga_core::Document;
 
 const INDENT: &str = "  ";
 
-pub(crate) fn notes_lines(doc: &Document, width: usize) -> Vec<String> {
+pub(crate) fn notes_lines(
+    doc: &Document,
+    width: usize,
+    title: &str,
+    before_first_scene: &str,
+) -> Vec<String> {
     let notes = doc.notes();
     if notes.is_empty() {
         return Vec::new();
     }
-    let mut lines = vec!["NOTES".to_string(), String::new()];
+    let mut lines = vec![title.to_string(), String::new()];
     let mut scene: Option<&Option<String>> = None;
     for (index, note) in notes.iter().enumerate() {
         if scene != Some(&note.scene) {
@@ -18,7 +23,7 @@ pub(crate) fn notes_lines(doc: &Document, width: usize) -> Vec<String> {
             lines.push(
                 note.scene
                     .clone()
-                    .unwrap_or_else(|| "Before the first scene".to_string()),
+                    .unwrap_or_else(|| before_first_scene.to_string()),
             );
         }
         let label = format!("{INDENT}{}. ", index + 1);
@@ -78,7 +83,7 @@ mod tests {
             "[[First]]\n\nINT. A - DAY\n\nText [[second]] and [[third one]].\n\nEXT. B - NIGHT\n\nMore [[fourth]].\n",
         );
         assert_eq!(
-            notes_lines(&doc, 40),
+            notes_lines(&doc, 40, "NOTES", "Before the first scene"),
             vec![
                 "NOTES",
                 "",
@@ -96,7 +101,24 @@ mod tests {
     }
 
     #[test]
+    fn titles_come_from_the_caller() {
+        let doc = parse_full("[[Alpha]]\n");
+        assert_eq!(
+            notes_lines(&doc, 40, "ЗАМЕТКИ", "До первой сцены"),
+            vec!["ЗАМЕТКИ", "", "До первой сцены", "  1. Alpha"]
+        );
+    }
+
+    #[test]
     fn no_notes_gives_no_lines() {
-        assert!(notes_lines(&parse_full("Text.\n"), 40).is_empty());
+        assert!(
+            notes_lines(
+                &parse_full("Text.\n"),
+                40,
+                "NOTES",
+                "Before the first scene"
+            )
+            .is_empty()
+        );
     }
 }
